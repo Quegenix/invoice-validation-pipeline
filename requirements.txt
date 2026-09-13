@@ -1,0 +1,6 @@
+# Test-set generation
+reportlab>=4.0
+pillow>=10.0
+
+# Optional — only needed for --extractor claude
+# anthropic>=0.40

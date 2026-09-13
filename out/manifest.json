@@ -1,0 +1,2276 @@
+{
+  "generated_for": "Invoice extraction + validation pipeline demo",
+  "buyer": "Northgate Supply Co.",
+  "generated_on": "2026-09-11",
+  "random_seed": 20260911,
+  "document_count": 24,
+  "clean_count": 17,
+  "seeded_count": 7,
+  "notice": "Every company, person, address, phone number and transaction in this set is invented. Nothing here corresponds to a real vendor, customer or employer.",
+  "manifest_semantics": "Fields ending in _printed record what appears on the page, not what would have been arithmetically correct. Extraction accuracy is measured against the printed values. Whether those values reconcile is what the validation layer decides.",
+  "known_vendors": [
+    "Caldwell Paper & Packaging",
+    "Brightline Freight Systems",
+    "Verity Office Solutions",
+    "Ironwood Components LLC",
+    "Summit Ridge Utilities",
+    "Praxis Software Group",
+    "Halvorsen Machine Works",
+    "Coastal Label & Print",
+    "Meridian Professional Services",
+    "Tri-State Electric Supply",
+    "Oakfield Logistics Partners",
+    "Kessler Industrial Tools"
+  ],
+  "documents": [
+    {
+      "file": "INV-001.pdf",
+      "layout": "modern",
+      "vendor_name": "Praxis Software Group",
+      "invoice_number": "PS-04823",
+      "invoice_date": "2026-07-25",
+      "due_date": "2026-08-24",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 30",
+      "po_number": "PO-41742",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Additional API call bundle, 1M calls",
+          "quantity": 8,
+          "unit": "EA",
+          "unit_price": "220.45",
+          "amount": "1763.60"
+        },
+        {
+          "description": "Fleet routing platform, annual, 25 seats",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "4205.55",
+          "amount": "4205.55"
+        },
+        {
+          "description": "Support plan, gold tier, annual",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1812.19",
+          "amount": "1812.19"
+        },
+        {
+          "description": "Implementation services, remote",
+          "quantity": 5,
+          "unit": "HR",
+          "unit_price": "183.55",
+          "amount": "917.75"
+        },
+        {
+          "description": "Warehouse scanning app, monthly, per device",
+          "quantity": 51,
+          "unit": "EA",
+          "unit_price": "30.82",
+          "amount": "1571.82"
+        },
+        {
+          "description": "Support plan, gold tier, annual  [lot 6343]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "2159.28",
+          "amount": "2159.28"
+        }
+      ],
+      "line_item_count": 6,
+      "sum_of_line_amounts": "12430.19",
+      "subtotal_printed": "12430.19",
+      "tax_rate": "0.0825",
+      "tax_printed": "1025.49",
+      "freight_printed": "0.00",
+      "total_printed": "13455.68",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-002.pdf",
+      "layout": "classic",
+      "vendor_name": "Oakfield Logistics Partners",
+      "invoice_number": "OL-04829",
+      "invoice_date": "2026-07-13",
+      "due_date": "2026-08-12",
+      "date_format_on_document": "long",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Kitting labor",
+          "quantity": 5,
+          "unit": "HR",
+          "unit_price": "27.92",
+          "amount": "139.60"
+        },
+        {
+          "description": "Pick and pack, per order",
+          "quantity": 213,
+          "unit": "EA",
+          "unit_price": "3.78",
+          "amount": "805.14"
+        },
+        {
+          "description": "Cycle count, quarterly",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "410.21",
+          "amount": "410.21"
+        },
+        {
+          "description": "Pallet storage, per pallet per month",
+          "quantity": 216,
+          "unit": "EA",
+          "unit_price": "21.54",
+          "amount": "4652.64"
+        },
+        {
+          "description": "Receiving, per pallet",
+          "quantity": 13,
+          "unit": "EA",
+          "unit_price": "14.00",
+          "amount": "182.00"
+        }
+      ],
+      "line_item_count": 5,
+      "sum_of_line_amounts": "6189.59",
+      "subtotal_printed": "6198.59",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "6198.59",
+      "seeded_error": "LINE_SUM_MISMATCH",
+      "error_note": "Printed subtotal is 9.00 higher than the sum of the printed line amounts (digit transposition). Tax and total are internally consistent with the wrong subtotal, so only the line-sum check catches this.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-003.pdf",
+      "layout": "dense",
+      "vendor_name": "Ironwood Components LLC",
+      "invoice_number": "IC-04867",
+      "invoice_date": "2026-08-17",
+      "due_date": "2026-09-16",
+      "date_format_on_document": "long",
+      "terms": "2/10 Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Retaining ring, external, 1.00 shaft",
+          "quantity": 19,
+          "unit": "C",
+          "unit_price": "9.53",
+          "amount": "181.07"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375",
+          "quantity": 22,
+          "unit": "C",
+          "unit_price": "24.83",
+          "amount": "546.26"
+        },
+        {
+          "description": "Machined bracket, rev C, powder coat",
+          "quantity": 127,
+          "unit": "EA",
+          "unit_price": "30.78",
+          "amount": "3909.06"
+        },
+        {
+          "description": "Flat washer, 3/8 SAE, zinc",
+          "quantity": 12,
+          "unit": "C",
+          "unit_price": "5.35",
+          "amount": "64.20"
+        },
+        {
+          "description": "Hex cap screw, 3/8-16 x 1-1/2, zinc",
+          "quantity": 23,
+          "unit": "C",
+          "unit_price": "28.86",
+          "amount": "663.78"
+        },
+        {
+          "description": "Compression spring, 0.75 OD x 2.00 FL",
+          "quantity": 54,
+          "unit": "EA",
+          "unit_price": "4.70",
+          "amount": "253.80"
+        },
+        {
+          "description": "Ball bearing, 6203-2RS",
+          "quantity": 63,
+          "unit": "EA",
+          "unit_price": "11.87",
+          "amount": "747.81"
+        },
+        {
+          "description": "Aluminum extrusion, 6105-T5, 1.5in, 96in length",
+          "quantity": 37,
+          "unit": "EA",
+          "unit_price": "52.71",
+          "amount": "1950.27"
+        },
+        {
+          "description": "Aluminum extrusion, 6105-T5, 1.5in, 96in length  [lot 4545]",
+          "quantity": 8,
+          "unit": "EA",
+          "unit_price": "52.18",
+          "amount": "417.44"
+        },
+        {
+          "description": "Compression spring, 0.75 OD x 2.00 FL  [lot 9152]",
+          "quantity": 227,
+          "unit": "EA",
+          "unit_price": "2.17",
+          "amount": "492.59"
+        },
+        {
+          "description": "Retaining ring, external, 1.00 shaft  [lot 4944]",
+          "quantity": 10,
+          "unit": "C",
+          "unit_price": "12.29",
+          "amount": "122.90"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 8335]",
+          "quantity": 10,
+          "unit": "C",
+          "unit_price": "16.26",
+          "amount": "162.60"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 2482]",
+          "quantity": 22,
+          "unit": "C",
+          "unit_price": "14.49",
+          "amount": "318.78"
+        },
+        {
+          "description": "Aluminum extrusion, 6105-T5, 1.5in, 96in length  [lot 7952]",
+          "quantity": 11,
+          "unit": "EA",
+          "unit_price": "40.86",
+          "amount": "449.46"
+        },
+        {
+          "description": "Retaining ring, external, 1.00 shaft  [lot 5826]",
+          "quantity": 17,
+          "unit": "C",
+          "unit_price": "18.38",
+          "amount": "312.46"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 3521]",
+          "quantity": 10,
+          "unit": "C",
+          "unit_price": "24.81",
+          "amount": "248.10"
+        },
+        {
+          "description": "Flat washer, 3/8 SAE, zinc  [lot 4431]",
+          "quantity": 30,
+          "unit": "C",
+          "unit_price": "7.66",
+          "amount": "229.80"
+        },
+        {
+          "description": "Machined bracket, rev C, powder coat  [lot 9377]",
+          "quantity": 11,
+          "unit": "EA",
+          "unit_price": "31.86",
+          "amount": "350.46"
+        },
+        {
+          "description": "Flat washer, 3/8 SAE, zinc  [lot 3074]",
+          "quantity": 48,
+          "unit": "C",
+          "unit_price": "7.19",
+          "amount": "345.12"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 8809]",
+          "quantity": 28,
+          "unit": "C",
+          "unit_price": "16.76",
+          "amount": "469.28"
+        },
+        {
+          "description": "Aluminum extrusion, 6105-T5, 1.5in, 96in length  [lot 6262]",
+          "quantity": 10,
+          "unit": "EA",
+          "unit_price": "47.03",
+          "amount": "470.30"
+        },
+        {
+          "description": "Compression spring, 0.75 OD x 2.00 FL  [lot 5109]",
+          "quantity": 187,
+          "unit": "EA",
+          "unit_price": "4.85",
+          "amount": "906.95"
+        },
+        {
+          "description": "Machined bracket, rev C, powder coat  [lot 5169]",
+          "quantity": 24,
+          "unit": "EA",
+          "unit_price": "39.54",
+          "amount": "948.96"
+        },
+        {
+          "description": "Hex cap screw, 3/8-16 x 1-1/2, zinc  [lot 2504]",
+          "quantity": 46,
+          "unit": "C",
+          "unit_price": "26.92",
+          "amount": "1238.32"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 6700]",
+          "quantity": 22,
+          "unit": "C",
+          "unit_price": "17.12",
+          "amount": "376.64"
+        },
+        {
+          "description": "Retaining ring, external, 1.00 shaft  [lot 6608]",
+          "quantity": 4,
+          "unit": "C",
+          "unit_price": "17.12",
+          "amount": "68.48"
+        },
+        {
+          "description": "Retaining ring, external, 1.00 shaft  [lot 2792]",
+          "quantity": 7,
+          "unit": "C",
+          "unit_price": "10.68",
+          "amount": "74.76"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 9302]",
+          "quantity": 11,
+          "unit": "C",
+          "unit_price": "20.71",
+          "amount": "227.81"
+        },
+        {
+          "description": "Ball bearing, 6203-2RS  [lot 7518]",
+          "quantity": 82,
+          "unit": "EA",
+          "unit_price": "11.26",
+          "amount": "923.32"
+        },
+        {
+          "description": "Compression spring, 0.75 OD x 2.00 FL  [lot 2296]",
+          "quantity": 64,
+          "unit": "EA",
+          "unit_price": "5.08",
+          "amount": "325.12"
+        },
+        {
+          "description": "Hex cap screw, 3/8-16 x 1-1/2, zinc  [lot 5115]",
+          "quantity": 48,
+          "unit": "C",
+          "unit_price": "21.60",
+          "amount": "1036.80"
+        },
+        {
+          "description": "Compression spring, 0.75 OD x 2.00 FL  [lot 5861]",
+          "quantity": 80,
+          "unit": "EA",
+          "unit_price": "3.22",
+          "amount": "257.60"
+        },
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375  [lot 6879]",
+          "quantity": 24,
+          "unit": "C",
+          "unit_price": "20.83",
+          "amount": "499.92"
+        },
+        {
+          "description": "Ball bearing, 6203-2RS  [lot 8872]",
+          "quantity": 24,
+          "unit": "EA",
+          "unit_price": "11.15",
+          "amount": "267.60"
+        }
+      ],
+      "line_item_count": 34,
+      "sum_of_line_amounts": "19857.82",
+      "subtotal_printed": "19857.82",
+      "tax_rate": "0.06",
+      "tax_printed": "1191.47",
+      "freight_printed": "129.19",
+      "total_printed": "21178.48",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-004.pdf",
+      "layout": "minimal",
+      "vendor_name": "Meridian Professional Services",
+      "invoice_number": "MP-04894",
+      "invoice_date": "2026-07-23",
+      "due_date": "2026-08-07",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 15",
+      "po_number": "PO-41876",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Janitorial service, monthly contract",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "970.18",
+          "amount": "970.18"
+        },
+        {
+          "description": "Advisory retainer",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "800.60",
+          "amount": "800.60"
+        },
+        {
+          "description": "Annual report preparation",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "2077.86",
+          "amount": "2077.86"
+        },
+        {
+          "description": "Monthly bookkeeping, close and reconciliation",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1008.97",
+          "amount": "1008.97"
+        }
+      ],
+      "line_item_count": 4,
+      "sum_of_line_amounts": "4857.61",
+      "subtotal_printed": "4857.61",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "4857.61",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-005.pdf",
+      "layout": "modern",
+      "vendor_name": "Brightline Freight Systems",
+      "invoice_number": "BF-04919",
+      "invoice_date": "2026-07-31",
+      "due_date": "2026-08-15",
+      "date_format_on_document": "us_slash",
+      "terms": "Net 15",
+      "po_number": "PO-41126",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Reconsignment fee",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "104.83",
+          "amount": "104.83"
+        },
+        {
+          "description": "Fuel surcharge",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "112.84",
+          "amount": "225.68"
+        },
+        {
+          "description": "Residential delivery surcharge",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "62.37",
+          "amount": "124.74"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "419.88",
+          "amount": "839.76"
+        },
+        {
+          "description": "Liftgate service",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "56.31",
+          "amount": "225.24"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "322.96",
+          "amount": "322.96"
+        },
+        {
+          "description": "Detention, per hour after 2 hrs free",
+          "quantity": 5,
+          "unit": "HR",
+          "unit_price": "87.97",
+          "amount": "439.85"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 3647]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "66.23",
+          "amount": "198.69"
+        }
+      ],
+      "line_item_count": 8,
+      "sum_of_line_amounts": "2481.75",
+      "subtotal_printed": "2481.75",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "2481.75",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-006.pdf",
+      "layout": "scanned",
+      "vendor_name": "Halvorsen Machine Works",
+      "invoice_number": "HM-04923",
+      "invoice_date": "2024-07-09",
+      "due_date": "2024-08-08",
+      "date_format_on_document": "iso",
+      "terms": "Net 30",
+      "po_number": "PO-41046",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Forklift 90-day service, unit FL-2",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "570.37",
+          "amount": "570.37"
+        },
+        {
+          "description": "Hydraulic hose assembly, replacement",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "124.83",
+          "amount": "624.15"
+        },
+        {
+          "description": "Travel and mileage",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "71.55",
+          "amount": "143.10"
+        },
+        {
+          "description": "Labor, field technician",
+          "quantity": 4,
+          "unit": "HR",
+          "unit_price": "135.48",
+          "amount": "541.92"
+        },
+        {
+          "description": "Conveyor belt splice, on-site",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "673.01",
+          "amount": "2019.03"
+        },
+        {
+          "description": "Drive motor, 2HP, replacement",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "861.54",
+          "amount": "1723.08"
+        }
+      ],
+      "line_item_count": 6,
+      "sum_of_line_amounts": "5621.65",
+      "subtotal_printed": "5621.65",
+      "tax_rate": "0.07",
+      "tax_printed": "393.52",
+      "freight_printed": "172.72",
+      "total_printed": "6187.89",
+      "seeded_error": "STALE_DATE",
+      "error_note": "Invoice dated more than two years in the past. Either a very late submission or a keying error; either way it should not post silently into the current period.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-007.pdf",
+      "layout": "classic",
+      "vendor_name": "Kessler Industrial Tools",
+      "invoice_number": "KI-04955",
+      "invoice_date": "2026-07-19",
+      "due_date": "2026-08-18",
+      "date_format_on_document": "long",
+      "terms": "Net 30",
+      "po_number": "PO-41304",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Carbide end mill, 1/2in, 4-flute",
+          "quantity": 18,
+          "unit": "EA",
+          "unit_price": "32.64",
+          "amount": "587.52"
+        },
+        {
+          "description": "Digital caliper, 6in, IP54",
+          "quantity": 9,
+          "unit": "EA",
+          "unit_price": "91.08",
+          "amount": "819.72"
+        },
+        {
+          "description": "Safety glasses, clear, box of 12",
+          "quantity": 9,
+          "unit": "BX",
+          "unit_price": "41.34",
+          "amount": "372.06"
+        },
+        {
+          "description": "Cut-off wheel, 4.5in, box of 25",
+          "quantity": 7,
+          "unit": "BX",
+          "unit_price": "64.08",
+          "amount": "448.56"
+        },
+        {
+          "description": "Impact driver, 18V, bare tool",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "161.75",
+          "amount": "323.50"
+        },
+        {
+          "description": "Torque wrench, 3/8 drive, calibrated",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "148.11",
+          "amount": "444.33"
+        },
+        {
+          "description": "Impact driver, 18V, bare tool  [lot 4450]",
+          "quantity": 6,
+          "unit": "EA",
+          "unit_price": "197.47",
+          "amount": "1184.82"
+        }
+      ],
+      "line_item_count": 7,
+      "sum_of_line_amounts": "4180.51",
+      "subtotal_printed": "4180.51",
+      "tax_rate": "0.09",
+      "tax_printed": "376.25",
+      "freight_printed": "60.47",
+      "total_printed": "4617.23",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-008.pdf",
+      "layout": "modern",
+      "vendor_name": "Summit Ridge Utilities",
+      "invoice_number": "SR-04960",
+      "invoice_date": "2026-08-19",
+      "due_date": "2026-08-19",
+      "date_format_on_document": "long",
+      "terms": "Due on Receipt",
+      "po_number": "PO-41593",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Natural gas service",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "599.44",
+          "amount": "599.44"
+        },
+        {
+          "description": "Water and sewer",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "223.19",
+          "amount": "223.19"
+        },
+        {
+          "description": "Electric service, 4180 Wexford Trace",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1546.68",
+          "amount": "1546.68"
+        },
+        {
+          "description": "Commercial waste collection, 6yd",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "221.01",
+          "amount": "221.01"
+        },
+        {
+          "description": "Commercial waste collection, 6yd  [lot 3752]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "200.22",
+          "amount": "200.22"
+        }
+      ],
+      "line_item_count": 5,
+      "sum_of_line_amounts": "2790.54",
+      "subtotal_printed": "2790.54",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "2790.54",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-009.pdf",
+      "layout": "minimal",
+      "vendor_name": "Pinehurst Facility Services",
+      "invoice_number": "PFS-14882",
+      "invoice_date": "2026-07-01",
+      "due_date": "2026-07-31",
+      "date_format_on_document": "iso",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Floor care, quarterly strip and wax",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "554.99",
+          "amount": "554.99"
+        },
+        {
+          "description": "Janitorial service, monthly contract",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1203.92",
+          "amount": "1203.92"
+        },
+        {
+          "description": "Monthly bookkeeping, close and reconciliation",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1076.95",
+          "amount": "1076.95"
+        }
+      ],
+      "line_item_count": 3,
+      "sum_of_line_amounts": "2835.86",
+      "subtotal_printed": "2835.86",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "2835.86",
+      "seeded_error": "UNKNOWN_VENDOR",
+      "error_note": "Vendor does not appear in the vendor master list. Document is internally consistent \u2014 only a lookup against known vendors catches it.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-010.pdf",
+      "layout": "dense",
+      "vendor_name": "Verity Office Solutions",
+      "invoice_number": "VO-05017",
+      "invoice_date": "2026-09-02",
+      "due_date": "2026-10-02",
+      "date_format_on_document": "iso",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Ballpoint pen, medium, box of 60",
+          "quantity": 12,
+          "unit": "BX",
+          "unit_price": "23.60",
+          "amount": "283.20"
+        },
+        {
+          "description": "File folders, letter, 1/3 cut, box of 100",
+          "quantity": 6,
+          "unit": "BX",
+          "unit_price": "28.68",
+          "amount": "172.08"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case",
+          "quantity": 2,
+          "unit": "CS",
+          "unit_price": "47.34",
+          "amount": "94.68"
+        },
+        {
+          "description": "Desk calendar, 12 month",
+          "quantity": 11,
+          "unit": "EA",
+          "unit_price": "9.77",
+          "amount": "107.47"
+        },
+        {
+          "description": "Toner cartridge, high yield, black",
+          "quantity": 6,
+          "unit": "EA",
+          "unit_price": "168.08",
+          "amount": "1008.48"
+        },
+        {
+          "description": "Whiteboard markers, assorted, pack of 12",
+          "quantity": 6,
+          "unit": "PK",
+          "unit_price": "12.54",
+          "amount": "75.24"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000",
+          "quantity": 3,
+          "unit": "CS",
+          "unit_price": "64.76",
+          "amount": "194.28"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000  [lot 5833]",
+          "quantity": 4,
+          "unit": "CS",
+          "unit_price": "72.89",
+          "amount": "291.56"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case  [lot 9796]",
+          "quantity": 5,
+          "unit": "CS",
+          "unit_price": "47.11",
+          "amount": "235.55"
+        },
+        {
+          "description": "Ballpoint pen, medium, box of 60  [lot 5278]",
+          "quantity": 12,
+          "unit": "BX",
+          "unit_price": "18.50",
+          "amount": "222.00"
+        },
+        {
+          "description": "Desk calendar, 12 month  [lot 8423]",
+          "quantity": 18,
+          "unit": "EA",
+          "unit_price": "13.10",
+          "amount": "235.80"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000  [lot 3210]",
+          "quantity": 2,
+          "unit": "CS",
+          "unit_price": "63.33",
+          "amount": "126.66"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000  [lot 3875]",
+          "quantity": 1,
+          "unit": "CS",
+          "unit_price": "74.57",
+          "amount": "74.57"
+        },
+        {
+          "description": "Desk calendar, 12 month  [lot 4580]",
+          "quantity": 8,
+          "unit": "EA",
+          "unit_price": "12.92",
+          "amount": "103.36"
+        },
+        {
+          "description": "Whiteboard markers, assorted, pack of 12  [lot 4007]",
+          "quantity": 7,
+          "unit": "PK",
+          "unit_price": "15.70",
+          "amount": "109.90"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case  [lot 3619]",
+          "quantity": 20,
+          "unit": "CS",
+          "unit_price": "46.86",
+          "amount": "937.20"
+        },
+        {
+          "description": "Ballpoint pen, medium, box of 60  [lot 8224]",
+          "quantity": 2,
+          "unit": "BX",
+          "unit_price": "23.70",
+          "amount": "47.40"
+        },
+        {
+          "description": "Whiteboard markers, assorted, pack of 12  [lot 9344]",
+          "quantity": 3,
+          "unit": "PK",
+          "unit_price": "18.99",
+          "amount": "56.97"
+        },
+        {
+          "description": "File folders, letter, 1/3 cut, box of 100  [lot 9308]",
+          "quantity": 6,
+          "unit": "BX",
+          "unit_price": "25.54",
+          "amount": "153.24"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case  [lot 9222]",
+          "quantity": 19,
+          "unit": "CS",
+          "unit_price": "47.53",
+          "amount": "903.07"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case  [lot 7564]",
+          "quantity": 6,
+          "unit": "CS",
+          "unit_price": "61.02",
+          "amount": "366.12"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case  [lot 7501]",
+          "quantity": 6,
+          "unit": "CS",
+          "unit_price": "52.52",
+          "amount": "315.12"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000  [lot 4754]",
+          "quantity": 5,
+          "unit": "CS",
+          "unit_price": "82.59",
+          "amount": "412.95"
+        },
+        {
+          "description": "Desk calendar, 12 month  [lot 5703]",
+          "quantity": 10,
+          "unit": "EA",
+          "unit_price": "12.84",
+          "amount": "128.40"
+        },
+        {
+          "description": "Whiteboard markers, assorted, pack of 12  [lot 4257]",
+          "quantity": 8,
+          "unit": "PK",
+          "unit_price": "19.36",
+          "amount": "154.88"
+        },
+        {
+          "description": "Desk calendar, 12 month  [lot 8344]",
+          "quantity": 20,
+          "unit": "EA",
+          "unit_price": "13.22",
+          "amount": "264.40"
+        },
+        {
+          "description": "Desk calendar, 12 month  [lot 9571]",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "11.32",
+          "amount": "56.60"
+        },
+        {
+          "description": "File folders, letter, 1/3 cut, box of 100  [lot 6794]",
+          "quantity": 6,
+          "unit": "BX",
+          "unit_price": "34.67",
+          "amount": "208.02"
+        },
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000  [lot 7421]",
+          "quantity": 1,
+          "unit": "CS",
+          "unit_price": "82.29",
+          "amount": "82.29"
+        }
+      ],
+      "line_item_count": 29,
+      "sum_of_line_amounts": "7421.49",
+      "subtotal_printed": "7421.49",
+      "tax_rate": "0.1",
+      "tax_printed": "742.15",
+      "freight_printed": "161.94",
+      "total_printed": "8325.58",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-011.pdf",
+      "layout": "modern",
+      "vendor_name": "Coastal Label & Print",
+      "invoice_number": null,
+      "invoice_date": "2026-08-03",
+      "due_date": "2026-09-02",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Product insert card, 4x6, 4/4, 10000 run",
+          "quantity": 3,
+          "unit": "M",
+          "unit_price": "46.52",
+          "amount": "139.56"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run",
+          "quantity": 10,
+          "unit": "M",
+          "unit_price": "130.15",
+          "amount": "1301.50"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "97.47",
+          "amount": "292.41"
+        },
+        {
+          "description": "Thermal transfer label, 4x6, 1000/roll",
+          "quantity": 76,
+          "unit": "RL",
+          "unit_price": "19.71",
+          "amount": "1497.96"
+        },
+        {
+          "description": "Plate and setup charge",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "117.52",
+          "amount": "235.04"
+        },
+        {
+          "description": "Proof, hard copy",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "31.95",
+          "amount": "127.80"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate  [lot 3455]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "74.95",
+          "amount": "149.90"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run  [lot 9039]",
+          "quantity": 5,
+          "unit": "M",
+          "unit_price": "136.16",
+          "amount": "680.80"
+        },
+        {
+          "description": "Proof, hard copy  [lot 9002]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "37.38",
+          "amount": "37.38"
+        }
+      ],
+      "line_item_count": 9,
+      "sum_of_line_amounts": "4462.35",
+      "subtotal_printed": "4462.35",
+      "tax_rate": "0.07",
+      "tax_printed": "312.36",
+      "freight_printed": "145.51",
+      "total_printed": "4920.22",
+      "seeded_error": "MISSING_INVOICE_NO",
+      "error_note": "No invoice number printed anywhere on the document. Nothing to duplicate-check against, so it cannot be posted unattended.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-012.pdf",
+      "layout": "classic",
+      "vendor_name": "Caldwell Paper & Packaging",
+      "invoice_number": "CP-05084",
+      "invoice_date": "2026-07-21",
+      "due_date": "2026-08-20",
+      "date_format_on_document": "us_slash",
+      "terms": "Net 30",
+      "po_number": "PO-41956",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Stretch film, 18in x 1500ft, 80ga",
+          "quantity": 8,
+          "unit": "CS",
+          "unit_price": "106.36",
+          "amount": "850.88"
+        },
+        {
+          "description": "Corrugated carton, 18x14x10, ECT-44",
+          "quantity": 17,
+          "unit": "CS",
+          "unit_price": "78.36",
+          "amount": "1332.12"
+        },
+        {
+          "description": "Kraft paper roll, 36in x 900ft",
+          "quantity": 4,
+          "unit": "RL",
+          "unit_price": "79.15",
+          "amount": "316.60"
+        },
+        {
+          "description": "Poly mailer, 10x13, 2.5 mil",
+          "quantity": 12,
+          "unit": "CS",
+          "unit_price": "36.94",
+          "amount": "443.28"
+        }
+      ],
+      "line_item_count": 4,
+      "sum_of_line_amounts": "2942.88",
+      "subtotal_printed": "2942.88",
+      "tax_rate": "0.0925",
+      "tax_printed": "272.22",
+      "freight_printed": "178.42",
+      "total_printed": "3393.52",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-013.pdf",
+      "layout": "scanned",
+      "vendor_name": "Praxis Software Group",
+      "invoice_number": "PS-05121",
+      "invoice_date": "2026-08-25",
+      "due_date": "2026-09-24",
+      "date_format_on_document": "long",
+      "terms": "Net 30",
+      "po_number": "PO-41301",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Implementation services, remote",
+          "quantity": 12,
+          "unit": "HR",
+          "unit_price": "162.94",
+          "amount": "1955.28"
+        },
+        {
+          "description": "Additional API call bundle, 1M calls",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "214.73",
+          "amount": "1073.65"
+        },
+        {
+          "description": "Warehouse scanning app, monthly, per device",
+          "quantity": 15,
+          "unit": "EA",
+          "unit_price": "21.78",
+          "amount": "326.70"
+        },
+        {
+          "description": "Fleet routing platform, annual, 25 seats",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "4605.48",
+          "amount": "4605.48"
+        },
+        {
+          "description": "Support plan, gold tier, annual",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1575.47",
+          "amount": "1575.47"
+        }
+      ],
+      "line_item_count": 5,
+      "sum_of_line_amounts": "9536.58",
+      "subtotal_printed": "9536.58",
+      "tax_rate": "0.0825",
+      "tax_printed": "786.77",
+      "freight_printed": "0.00",
+      "total_printed": "10323.35",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-014.pdf",
+      "layout": "modern",
+      "vendor_name": "Oakfield Logistics Partners",
+      "invoice_number": "OL-04829",
+      "invoice_date": "2026-08-12",
+      "due_date": "2026-09-11",
+      "date_format_on_document": "iso",
+      "terms": "Net 30",
+      "po_number": "PO-41904",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Pick and pack, per order",
+          "quantity": 680,
+          "unit": "EA",
+          "unit_price": "2.37",
+          "amount": "1611.60"
+        },
+        {
+          "description": "Receiving, per pallet",
+          "quantity": 48,
+          "unit": "EA",
+          "unit_price": "14.95",
+          "amount": "717.60"
+        },
+        {
+          "description": "Kitting labor",
+          "quantity": 29,
+          "unit": "HR",
+          "unit_price": "26.75",
+          "amount": "775.75"
+        },
+        {
+          "description": "Pallet storage, per pallet per month",
+          "quantity": 22,
+          "unit": "EA",
+          "unit_price": "14.64",
+          "amount": "322.08"
+        },
+        {
+          "description": "Cycle count, quarterly",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "545.06",
+          "amount": "1090.12"
+        },
+        {
+          "description": "Receiving, per pallet  [lot 8188]",
+          "quantity": 32,
+          "unit": "EA",
+          "unit_price": "12.72",
+          "amount": "407.04"
+        }
+      ],
+      "line_item_count": 6,
+      "sum_of_line_amounts": "4924.19",
+      "subtotal_printed": "4924.19",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "4924.19",
+      "seeded_error": "DUPLICATE_INVOICE_NO",
+      "error_note": "Same vendor and invoice number as INV-002, different date and amount. This is what a re-sent or re-keyed invoice looks like, and posting both double-pays the vendor.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-015.pdf",
+      "layout": "minimal",
+      "vendor_name": "Ironwood Components LLC",
+      "invoice_number": "IC-05164",
+      "invoice_date": "2026-07-12",
+      "due_date": "2026-08-11",
+      "date_format_on_document": "iso",
+      "terms": "2/10 Net 30",
+      "po_number": "PO-41767",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Nylon spacer, 0.25 ID x 0.50 OD x 0.375",
+          "quantity": 27,
+          "unit": "C",
+          "unit_price": "23.89",
+          "amount": "645.03"
+        },
+        {
+          "description": "Retaining ring, external, 1.00 shaft",
+          "quantity": 7,
+          "unit": "C",
+          "unit_price": "15.46",
+          "amount": "108.22"
+        },
+        {
+          "description": "Hex cap screw, 3/8-16 x 1-1/2, zinc",
+          "quantity": 13,
+          "unit": "C",
+          "unit_price": "22.59",
+          "amount": "293.67"
+        },
+        {
+          "description": "Aluminum extrusion, 6105-T5, 1.5in, 96in length",
+          "quantity": 36,
+          "unit": "EA",
+          "unit_price": "61.43",
+          "amount": "2211.48"
+        },
+        {
+          "description": "Ball bearing, 6203-2RS",
+          "quantity": 54,
+          "unit": "EA",
+          "unit_price": "9.78",
+          "amount": "528.12"
+        }
+      ],
+      "line_item_count": 5,
+      "sum_of_line_amounts": "3786.52",
+      "subtotal_printed": "3786.52",
+      "tax_rate": "0.06",
+      "tax_printed": "227.19",
+      "freight_printed": "105.11",
+      "total_printed": "4118.82",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-016.pdf",
+      "layout": "classic",
+      "vendor_name": "Meridian Professional Services",
+      "invoice_number": "MP-05190",
+      "invoice_date": "2026-07-24",
+      "due_date": "2026-08-08",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 15",
+      "po_number": "PO-41830",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Consulting, process review",
+          "quantity": 15,
+          "unit": "HR",
+          "unit_price": "188.47",
+          "amount": "2827.05"
+        },
+        {
+          "description": "Advisory retainer",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "915.80",
+          "amount": "915.80"
+        },
+        {
+          "description": "Janitorial service, monthly contract",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1067.38",
+          "amount": "1067.38"
+        },
+        {
+          "description": "Annual report preparation",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1939.36",
+          "amount": "1939.36"
+        },
+        {
+          "description": "Monthly bookkeeping, close and reconciliation",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "1618.55",
+          "amount": "1618.55"
+        },
+        {
+          "description": "Floor care, quarterly strip and wax",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "741.77",
+          "amount": "1483.54"
+        }
+      ],
+      "line_item_count": 6,
+      "sum_of_line_amounts": "9851.68",
+      "subtotal_printed": "9851.68",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "9851.68",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-017.pdf",
+      "layout": "dense",
+      "vendor_name": "Brightline Freight Systems",
+      "invoice_number": "BF-05228",
+      "invoice_date": "2026-07-02",
+      "due_date": "2026-07-17",
+      "date_format_on_document": "iso",
+      "terms": "Net 15",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Fuel surcharge",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "50.03",
+          "amount": "100.06"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "588.71",
+          "amount": "588.71"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "584.06",
+          "amount": "1752.18"
+        },
+        {
+          "description": "Detention, per hour after 2 hrs free",
+          "quantity": 5,
+          "unit": "HR",
+          "unit_price": "81.09",
+          "amount": "405.45"
+        },
+        {
+          "description": "Liftgate service",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "78.79",
+          "amount": "236.37"
+        },
+        {
+          "description": "Reconsignment fee",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "107.40",
+          "amount": "107.40"
+        },
+        {
+          "description": "Residential delivery surcharge",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "72.59",
+          "amount": "362.95"
+        },
+        {
+          "description": "Fuel surcharge  [lot 3389]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "73.06",
+          "amount": "73.06"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN  [lot 4487]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "345.99",
+          "amount": "1037.97"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC  [lot 7250]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "609.04",
+          "amount": "1827.12"
+        },
+        {
+          "description": "Detention, per hour after 2 hrs free  [lot 7371]",
+          "quantity": 2,
+          "unit": "HR",
+          "unit_price": "93.63",
+          "amount": "187.26"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC  [lot 8039]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "622.44",
+          "amount": "622.44"
+        },
+        {
+          "description": "Reconsignment fee  [lot 6134]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "73.87",
+          "amount": "73.87"
+        },
+        {
+          "description": "Reconsignment fee  [lot 5883]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "104.11",
+          "amount": "104.11"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN  [lot 9667]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "423.76",
+          "amount": "423.76"
+        },
+        {
+          "description": "Reconsignment fee  [lot 5757]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "73.13",
+          "amount": "146.26"
+        },
+        {
+          "description": "Detention, per hour after 2 hrs free  [lot 7618]",
+          "quantity": 2,
+          "unit": "HR",
+          "unit_price": "82.18",
+          "amount": "164.36"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC  [lot 5053]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "440.51",
+          "amount": "1321.53"
+        },
+        {
+          "description": "Liftgate service  [lot 3980]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "75.58",
+          "amount": "302.32"
+        },
+        {
+          "description": "Reconsignment fee  [lot 8112]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "99.64",
+          "amount": "99.64"
+        },
+        {
+          "description": "Liftgate service  [lot 8377]",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "92.75",
+          "amount": "463.75"
+        },
+        {
+          "description": "Liftgate service  [lot 5821]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "89.84",
+          "amount": "179.68"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 6310]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "84.12",
+          "amount": "168.24"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC  [lot 9516]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "480.87",
+          "amount": "480.87"
+        },
+        {
+          "description": "Liftgate service  [lot 9254]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "63.97",
+          "amount": "255.88"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 7560]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "60.96",
+          "amount": "243.84"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 9581]",
+          "quantity": 6,
+          "unit": "EA",
+          "unit_price": "86.03",
+          "amount": "516.18"
+        },
+        {
+          "description": "Liftgate service  [lot 7891]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "73.17",
+          "amount": "292.68"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Charlotte NC  [lot 8450]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "501.94",
+          "amount": "501.94"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 9515]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "65.22",
+          "amount": "260.88"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 8287]",
+          "quantity": 5,
+          "unit": "EA",
+          "unit_price": "45.65",
+          "amount": "228.25"
+        },
+        {
+          "description": "Residential delivery surcharge  [lot 4871]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "75.75",
+          "amount": "75.75"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN  [lot 5904]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "563.89",
+          "amount": "563.89"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN  [lot 3671]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "513.52",
+          "amount": "1540.56"
+        },
+        {
+          "description": "Reconsignment fee  [lot 8313]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "96.24",
+          "amount": "96.24"
+        },
+        {
+          "description": "Reconsignment fee  [lot 4711]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "107.80",
+          "amount": "215.60"
+        },
+        {
+          "description": "Detention, per hour after 2 hrs free  [lot 8385]",
+          "quantity": 4,
+          "unit": "HR",
+          "unit_price": "93.05",
+          "amount": "372.20"
+        },
+        {
+          "description": "LTL shipment, Atlanta GA to Nashville TN  [lot 6624]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "487.82",
+          "amount": "975.64"
+        },
+        {
+          "description": "Liftgate service  [lot 2341]",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "71.08",
+          "amount": "142.16"
+        },
+        {
+          "description": "Liftgate service  [lot 9284]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "87.94",
+          "amount": "87.94"
+        },
+        {
+          "description": "Liftgate service  [lot 5055]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "62.84",
+          "amount": "188.52"
+        }
+      ],
+      "line_item_count": 41,
+      "sum_of_line_amounts": "17787.51",
+      "subtotal_printed": "17787.51",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "75.91",
+      "total_printed": "17787.51",
+      "seeded_error": "TOTAL_MISMATCH",
+      "error_note": "Freight appears as a charge but was not added into the printed total. subtotal + tax + freight != total.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-018.pdf",
+      "layout": "modern",
+      "vendor_name": "Halvorsen Machine Works",
+      "invoice_number": "HM-05248",
+      "invoice_date": "2026-08-28",
+      "due_date": "2026-09-27",
+      "date_format_on_document": "us_slash",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Labor, field technician",
+          "quantity": 11,
+          "unit": "HR",
+          "unit_price": "141.68",
+          "amount": "1558.48"
+        },
+        {
+          "description": "Conveyor belt splice, on-site",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "485.45",
+          "amount": "970.90"
+        },
+        {
+          "description": "Drive motor, 2HP, replacement",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "1001.26",
+          "amount": "2002.52"
+        },
+        {
+          "description": "Travel and mileage",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "107.44",
+          "amount": "429.76"
+        },
+        {
+          "description": "Forklift 90-day service, unit FL-2",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "402.85",
+          "amount": "805.70"
+        },
+        {
+          "description": "Hydraulic hose assembly, replacement",
+          "quantity": 6,
+          "unit": "EA",
+          "unit_price": "129.37",
+          "amount": "776.22"
+        },
+        {
+          "description": "Labor, field technician  [lot 4333]",
+          "quantity": 16,
+          "unit": "HR",
+          "unit_price": "125.91",
+          "amount": "2014.56"
+        }
+      ],
+      "line_item_count": 7,
+      "sum_of_line_amounts": "8558.14",
+      "subtotal_printed": "8558.14",
+      "tax_rate": "0.07",
+      "tax_printed": "599.07",
+      "freight_printed": "133.58",
+      "total_printed": "9290.79",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-019.pdf",
+      "layout": "scanned",
+      "vendor_name": "Kessler Industrial Tools",
+      "invoice_number": "KI-05251",
+      "invoice_date": "2026-08-25",
+      "due_date": "2026-09-24",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Impact driver, 18V, bare tool",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "149.25",
+          "amount": "298.50"
+        },
+        {
+          "description": "Digital caliper, 6in, IP54",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "96.80",
+          "amount": "96.80"
+        },
+        {
+          "description": "Cut-off wheel, 4.5in, box of 25",
+          "quantity": 10,
+          "unit": "BX",
+          "unit_price": "50.23",
+          "amount": "502.30"
+        },
+        {
+          "description": "Safety glasses, clear, box of 12",
+          "quantity": 2,
+          "unit": "BX",
+          "unit_price": "47.95",
+          "amount": "95.90"
+        }
+      ],
+      "line_item_count": 4,
+      "sum_of_line_amounts": "993.50",
+      "subtotal_printed": "993.50",
+      "tax_rate": "0.09",
+      "tax_printed": "89.42",
+      "freight_printed": "69.45",
+      "total_printed": "1152.37",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-020.pdf",
+      "layout": "classic",
+      "vendor_name": "Summit Ridge Utilities",
+      "invoice_number": "SR-05280",
+      "invoice_date": "2026-11-30",
+      "due_date": "2026-11-30",
+      "date_format_on_document": "iso",
+      "terms": "Due on Receipt",
+      "po_number": "PO-41722",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Electric service, 4180 Wexford Trace",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "973.73",
+          "amount": "973.73"
+        },
+        {
+          "description": "Water and sewer",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "221.50",
+          "amount": "221.50"
+        },
+        {
+          "description": "Natural gas service",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "417.54",
+          "amount": "417.54"
+        },
+        {
+          "description": "Commercial waste collection, 6yd",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "212.46",
+          "amount": "212.46"
+        },
+        {
+          "description": "Water and sewer  [lot 9606]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "280.87",
+          "amount": "280.87"
+        }
+      ],
+      "line_item_count": 5,
+      "sum_of_line_amounts": "2106.10",
+      "subtotal_printed": "2106.10",
+      "tax_rate": "0.0",
+      "tax_printed": "0.00",
+      "freight_printed": "0.00",
+      "total_printed": "2106.10",
+      "seeded_error": "FUTURE_DATE",
+      "error_note": "Invoice dated in the future. Common symptom of a wrong year on the vendor's template.",
+      "expected_disposition": "REVIEW"
+    },
+    {
+      "file": "INV-021.pdf",
+      "layout": "minimal",
+      "vendor_name": "Tri-State Electric Supply",
+      "invoice_number": "TE-05308",
+      "invoice_date": "2026-07-01",
+      "due_date": "2026-07-31",
+      "date_format_on_document": "iso",
+      "terms": "Net 30",
+      "po_number": null,
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "THHN wire, 12 AWG, 500ft spool",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "104.87",
+          "amount": "209.74"
+        },
+        {
+          "description": "Circuit breaker, 20A, 1-pole",
+          "quantity": 39,
+          "unit": "EA",
+          "unit_price": "24.12",
+          "amount": "940.68"
+        },
+        {
+          "description": "Junction box, 4-11/16 square, steel",
+          "quantity": 18,
+          "unit": "EA",
+          "unit_price": "7.13",
+          "amount": "128.34"
+        },
+        {
+          "description": "LED high bay fixture, 150W, 5000K",
+          "quantity": 15,
+          "unit": "EA",
+          "unit_price": "162.93",
+          "amount": "2443.95"
+        },
+        {
+          "description": "Motor starter, size 1, 480V",
+          "quantity": 8,
+          "unit": "EA",
+          "unit_price": "215.13",
+          "amount": "1721.04"
+        },
+        {
+          "description": "EMT conduit, 3/4in, 10ft stick",
+          "quantity": 28,
+          "unit": "EA",
+          "unit_price": "12.88",
+          "amount": "360.64"
+        }
+      ],
+      "line_item_count": 6,
+      "sum_of_line_amounts": "5804.39",
+      "subtotal_printed": "5804.39",
+      "tax_rate": "0.0925",
+      "tax_printed": "536.91",
+      "freight_printed": "38.18",
+      "total_printed": "6379.48",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-022.pdf",
+      "layout": "modern",
+      "vendor_name": "Verity Office Solutions",
+      "invoice_number": "VO-05346",
+      "invoice_date": "2026-07-23",
+      "due_date": "2026-08-22",
+      "date_format_on_document": "us_slash",
+      "terms": "Net 30",
+      "po_number": "PO-41453",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Packing list envelopes, 7x5.5, case of 1000",
+          "quantity": 4,
+          "unit": "CS",
+          "unit_price": "80.97",
+          "amount": "323.88"
+        },
+        {
+          "description": "Ballpoint pen, medium, box of 60",
+          "quantity": 4,
+          "unit": "BX",
+          "unit_price": "23.18",
+          "amount": "92.72"
+        },
+        {
+          "description": "Desk calendar, 12 month",
+          "quantity": 8,
+          "unit": "EA",
+          "unit_price": "9.56",
+          "amount": "76.48"
+        },
+        {
+          "description": "Multipurpose paper, 20lb, 8.5x11, 10-ream case",
+          "quantity": 10,
+          "unit": "CS",
+          "unit_price": "61.65",
+          "amount": "616.50"
+        }
+      ],
+      "line_item_count": 4,
+      "sum_of_line_amounts": "1109.58",
+      "subtotal_printed": "1109.58",
+      "tax_rate": "0.1",
+      "tax_printed": "110.96",
+      "freight_printed": "129.32",
+      "total_printed": "1349.86",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-023.pdf",
+      "layout": "dense",
+      "vendor_name": "Coastal Label & Print",
+      "invoice_number": "CL-05370",
+      "invoice_date": "2026-07-16",
+      "due_date": "2026-08-15",
+      "date_format_on_document": "abbr_dash",
+      "terms": "Net 30",
+      "po_number": "PO-41424",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Plate and setup charge",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "78.56",
+          "amount": "78.56"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "89.66",
+          "amount": "358.64"
+        },
+        {
+          "description": "Proof, hard copy",
+          "quantity": 2,
+          "unit": "EA",
+          "unit_price": "41.35",
+          "amount": "82.70"
+        },
+        {
+          "description": "Product insert card, 4x6, 4/4, 10000 run",
+          "quantity": 9,
+          "unit": "M",
+          "unit_price": "49.83",
+          "amount": "448.47"
+        },
+        {
+          "description": "Thermal transfer label, 4x6, 1000/roll",
+          "quantity": 60,
+          "unit": "RL",
+          "unit_price": "21.62",
+          "amount": "1297.20"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run",
+          "quantity": 8,
+          "unit": "M",
+          "unit_price": "95.65",
+          "amount": "765.20"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate  [lot 3180]",
+          "quantity": 6,
+          "unit": "EA",
+          "unit_price": "109.19",
+          "amount": "655.14"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run  [lot 2313]",
+          "quantity": 1,
+          "unit": "M",
+          "unit_price": "99.45",
+          "amount": "99.45"
+        },
+        {
+          "description": "Plate and setup charge  [lot 7014]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "90.94",
+          "amount": "90.94"
+        },
+        {
+          "description": "Proof, hard copy  [lot 8265]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "29.64",
+          "amount": "29.64"
+        },
+        {
+          "description": "Product insert card, 4x6, 4/4, 10000 run  [lot 6194]",
+          "quantity": 13,
+          "unit": "M",
+          "unit_price": "57.33",
+          "amount": "745.29"
+        },
+        {
+          "description": "Product insert card, 4x6, 4/4, 10000 run  [lot 7261]",
+          "quantity": 5,
+          "unit": "M",
+          "unit_price": "56.65",
+          "amount": "283.25"
+        },
+        {
+          "description": "Proof, hard copy  [lot 2318]",
+          "quantity": 4,
+          "unit": "EA",
+          "unit_price": "42.40",
+          "amount": "169.60"
+        },
+        {
+          "description": "Plate and setup charge  [lot 6976]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "95.41",
+          "amount": "286.23"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate  [lot 6317]",
+          "quantity": 3,
+          "unit": "EA",
+          "unit_price": "82.19",
+          "amount": "246.57"
+        },
+        {
+          "description": "Thermal transfer label, 4x6, 1000/roll  [lot 7610]",
+          "quantity": 53,
+          "unit": "RL",
+          "unit_price": "21.69",
+          "amount": "1149.57"
+        },
+        {
+          "description": "Product insert card, 4x6, 4/4, 10000 run  [lot 9113]",
+          "quantity": 11,
+          "unit": "M",
+          "unit_price": "52.31",
+          "amount": "575.41"
+        },
+        {
+          "description": "Carton stamp, self-inking, custom plate  [lot 6501]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "74.75",
+          "amount": "74.75"
+        },
+        {
+          "description": "Plate and setup charge  [lot 8587]",
+          "quantity": 1,
+          "unit": "EA",
+          "unit_price": "90.89",
+          "amount": "90.89"
+        },
+        {
+          "description": "Thermal transfer label, 4x6, 1000/roll  [lot 4935]",
+          "quantity": 93,
+          "unit": "RL",
+          "unit_price": "26.29",
+          "amount": "2444.97"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run  [lot 5578]",
+          "quantity": 2,
+          "unit": "M",
+          "unit_price": "130.53",
+          "amount": "261.06"
+        },
+        {
+          "description": "Custom shipping label, 2-color, 5000 run  [lot 7716]",
+          "quantity": 8,
+          "unit": "M",
+          "unit_price": "141.05",
+          "amount": "1128.40"
+        }
+      ],
+      "line_item_count": 22,
+      "sum_of_line_amounts": "11361.93",
+      "subtotal_printed": "11361.93",
+      "tax_rate": "0.07",
+      "tax_printed": "795.34",
+      "freight_printed": "0.00",
+      "total_printed": "12157.27",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    },
+    {
+      "file": "INV-024.pdf",
+      "layout": "classic",
+      "vendor_name": "Caldwell Paper & Packaging",
+      "invoice_number": "CP-05410",
+      "invoice_date": "2026-07-11",
+      "due_date": "2026-08-10",
+      "date_format_on_document": "us_slash",
+      "terms": "Net 30",
+      "po_number": "PO-41638",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Void fill paper, 15in x 1800ft roll",
+          "quantity": 7,
+          "unit": "RL",
+          "unit_price": "110.10",
+          "amount": "770.70"
+        },
+        {
+          "description": "Poly mailer, 10x13, 2.5 mil",
+          "quantity": 18,
+          "unit": "CS",
+          "unit_price": "48.22",
+          "amount": "867.96"
+        },
+        {
+          "description": "Corrugated carton, 12x9x6, ECT-32",
+          "quantity": 8,
+          "unit": "CS",
+          "unit_price": "62.49",
+          "amount": "499.92"
+        },
+        {
+          "description": "Edge protector, 2x2x48, V-board",
+          "quantity": 146,
+          "unit": "BD",
+          "unit_price": "2.47",
+          "amount": "360.62"
+        },
+        {
+          "description": "Pressure-sensitive carton tape, 2in x 110yd",
+          "quantity": 2,
+          "unit": "CS",
+          "unit_price": "66.99",
+          "amount": "133.98"
+        },
+        {
+          "description": "Corrugated carton, 18x14x10, ECT-44",
+          "quantity": 11,
+          "unit": "CS",
+          "unit_price": "82.55",
+          "amount": "908.05"
+        },
+        {
+          "description": "Kraft paper roll, 36in x 900ft",
+          "quantity": 8,
+          "unit": "RL",
+          "unit_price": "63.47",
+          "amount": "507.76"
+        },
+        {
+          "description": "Stretch film, 18in x 1500ft, 80ga",
+          "quantity": 6,
+          "unit": "CS",
+          "unit_price": "141.94",
+          "amount": "851.64"
+        }
+      ],
+      "line_item_count": 8,
+      "sum_of_line_amounts": "4900.63",
+      "subtotal_printed": "4900.63",
+      "tax_rate": "0.0925",
+      "tax_printed": "453.31",
+      "freight_printed": "42.11",
+      "total_printed": "5396.05",
+      "seeded_error": null,
+      "error_note": null,
+      "expected_disposition": "POST"
+    }
+  ]
+}

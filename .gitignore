@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+.idea/
+.vscode/
+
+# Generated output is COMMITTED on purpose — a portfolio repo should show
+# results without requiring a build. Uncomment if this stops being true.
+# out/invoices/
+# out/results.json
+# out/review.html
