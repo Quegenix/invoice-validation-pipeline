@@ -41,6 +41,7 @@ from reportlab.lib.utils import ImageReader
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 import dataset
+import fonts
 
 SEED = 20260911
 random.seed(SEED)
@@ -48,22 +49,24 @@ random.seed(SEED)
 OUT = Path(__file__).parent / "out"
 PDF_DIR = OUT / "invoices"
 
-FONT_DIR = Path("/usr/share/fonts/truetype")
-DEJAVU = FONT_DIR / "dejavu"
-LIBERATION = FONT_DIR / "liberation"
-
 # ---------------------------------------------------------------------------
 # Fonts
+#
+# Resolved per-platform rather than hardcoded. See fonts.py — run it directly
+# to see what your machine provides. Roles that find no font file fall back to
+# reportlab's built-in Type1 faces, so generation always completes.
 # ---------------------------------------------------------------------------
 
-pdfmetrics.registerFont(TTFont("DJSans", str(DEJAVU / "DejaVuSans.ttf")))
-pdfmetrics.registerFont(TTFont("DJSans-Bold", str(DEJAVU / "DejaVuSans-Bold.ttf")))
-pdfmetrics.registerFont(TTFont("DJSerif", str(DEJAVU / "DejaVuSerif.ttf")))
-pdfmetrics.registerFont(TTFont("DJSerif-Bold", str(DEJAVU / "DejaVuSerif-Bold.ttf")))
-pdfmetrics.registerFont(TTFont("DJCond", str(DEJAVU / "DejaVuSansCondensed.ttf")))
-pdfmetrics.registerFont(TTFont("DJCond-Bold", str(DEJAVU / "DejaVuSansCondensed-Bold.ttf")))
-pdfmetrics.registerFont(TTFont("LibSans", str(LIBERATION / "LiberationSans-Regular.ttf")))
-pdfmetrics.registerFont(TTFont("LibSans-Bold", str(LIBERATION / "LiberationSans-Bold.ttf")))
+F = fonts.register(pdfmetrics, TTFont)
+
+DJSans = F["sans"]
+DJSans_B = F["sans-bold"]
+DJSerif = F["serif"]
+DJSerif_B = F["serif-bold"]
+DJCond = F["cond"]
+DJCond_B = F["cond-bold"]
+LibSans = F["sans2"]
+LibSans_B = F["sans2-bold"]
 
 # ---------------------------------------------------------------------------
 # Money helpers — Decimal throughout. A demo about arithmetic validation has
@@ -304,20 +307,20 @@ def layout_modern(c, inv):
     c.rect(0, H - 1.45 * inch, W, 1.45 * inch, fill=1, stroke=0)
 
     c.setFillColorRGB(1, 1, 1)
-    c.setFont("DJSans-Bold", 19)
+    c.setFont(DJSans_B, 19)
     c.drawString(m, H - 0.72 * inch, v["name"])
-    c.setFont("DJSans", 8.5)
+    c.setFont(DJSans, 8.5)
     c.drawString(m, H - 0.95 * inch, v["addr1"])
     c.drawString(m, H - 1.12 * inch, f"{v['city']}, {v['state']} {v['zip']}   ·   {v['phone']}")
 
-    c.setFont("DJSans-Bold", 26)
+    c.setFont(DJSans_B, 26)
     c.drawRightString(W - m, H - 0.80 * inch, "INVOICE")
 
     y = H - 1.45 * inch - 0.42 * inch
     c.setFillColorRGB(0.25, 0.25, 0.25)
-    c.setFont("DJSans-Bold", 8)
+    c.setFont(DJSans_B, 8)
     c.drawString(m, y, "BILL TO")
-    c.setFont("DJSans", 9)
+    c.setFont(DJSans, 9)
     b = dataset.BUYER
     for i, line in enumerate([b["name"], b["addr1"], b["addr2"],
                               f"{b['city']}, {b['state']} {b['zip']}"]):
@@ -334,10 +337,10 @@ def layout_modern(c, inv):
 
     fy = y
     for label, val in fields:
-        c.setFont("DJSans", 8)
+        c.setFont(DJSans, 8)
         c.setFillColorRGB(0.45, 0.45, 0.45)
         c.drawRightString(W - m - 1.35 * inch, fy, label)
-        c.setFont("DJSans-Bold", 9)
+        c.setFont(DJSans_B, 9)
         c.setFillColorRGB(0.1, 0.1, 0.1)
         c.drawRightString(W - m, fy, str(val))
         fy -= 15
@@ -348,7 +351,7 @@ def layout_modern(c, inv):
     c.setFillColorRGB(0.13, 0.31, 0.45)
     c.rect(m, ty - 4, W - 2 * m, 20, fill=1, stroke=0)
     c.setFillColorRGB(1, 1, 1)
-    c.setFont("DJSans-Bold", 8.5)
+    c.setFont(DJSans_B, 8.5)
     c.drawString(cols[0] + 6, ty + 2, "DESCRIPTION")
     c.drawRightString(cols[2] - 8, ty + 2, "QTY")
     c.drawRightString(cols[3] - 8, ty + 2, "UNIT PRICE")
@@ -360,7 +363,7 @@ def layout_modern(c, inv):
             c.setFillColorRGB(0.96, 0.97, 0.98)
             c.rect(m, ry - 4, W - 2 * m, 17, fill=1, stroke=0)
         c.setFillColorRGB(0.1, 0.1, 0.1)
-        c.setFont("DJSans", 8.5)
+        c.setFont(DJSans, 8.5)
         c.drawString(cols[0] + 6, ry, it["description"][:58])
         c.drawRightString(cols[2] - 8, ry, f"{it['quantity']} {it['unit']}")
         c.drawRightString(cols[3] - 8, ry, fmt(it["unit_price"]))
@@ -375,7 +378,7 @@ def layout_modern(c, inv):
         rows.append(("Freight", inv["freight"]))
 
     for label, val in rows:
-        c.setFont("DJSans", 9)
+        c.setFont(DJSans, 9)
         c.drawRightString(W - m - 1.15 * inch, ry, label)
         c.drawRightString(W - m, ry, fmt(val))
         ry -= 15
@@ -384,13 +387,13 @@ def layout_modern(c, inv):
     c.setLineWidth(1.2)
     c.line(W - m - 2.6 * inch, ry + 8, W - m, ry + 8)
     ry -= 6
-    c.setFont("DJSans-Bold", 12)
+    c.setFont(DJSans_B, 12)
     c.setFillColorRGB(0.13, 0.31, 0.45)
     c.drawRightString(W - m - 1.15 * inch, ry, "TOTAL DUE")
     c.drawRightString(W - m, ry, fmt(inv["total"], symbol=True))
 
     c.setFillColorRGB(0.45, 0.45, 0.45)
-    c.setFont("DJSans", 7.5)
+    c.setFont(DJSans, 7.5)
     c.drawString(m, 0.6 * inch, f"Remit to {v['name']}, {v['addr1']}, {v['city']}, {v['state']} {v['zip']}")
     c.drawRightString(W - m, 0.6 * inch, "Thank you for your business.")
 
@@ -405,9 +408,9 @@ def layout_classic(c, inv):
     m = 0.9 * inch
 
     c.setFillColorRGB(0, 0, 0)
-    c.setFont("DJSerif-Bold", 16)
+    c.setFont(DJSerif_B, 16)
     c.drawCentredString(W / 2, H - 0.85 * inch, v["name"].upper())
-    c.setFont("DJSerif", 9)
+    c.setFont(DJSerif, 9)
     c.drawCentredString(W / 2, H - 1.05 * inch, f"{v['addr1']}  ·  {v['city']}, {v['state']} {v['zip']}")
     c.drawCentredString(W / 2, H - 1.20 * inch, f"Telephone {v['phone']}")
 
@@ -416,7 +419,7 @@ def layout_classic(c, inv):
     c.setLineWidth(0.5)
     c.line(m, H - 1.39 * inch, W - m, H - 1.39 * inch)
 
-    c.setFont("DJSerif-Bold", 12)
+    c.setFont(DJSerif_B, 12)
     c.drawCentredString(W / 2, H - 1.68 * inch, "I N V O I C E")
 
     boxtop = H - 1.90 * inch
@@ -425,9 +428,9 @@ def layout_classic(c, inv):
     c.rect(m, boxtop - boxh, W - 2 * m, boxh, fill=0, stroke=1)
     c.line(W / 2, boxtop - boxh, W / 2, boxtop)
 
-    c.setFont("DJSerif-Bold", 8)
+    c.setFont(DJSerif_B, 8)
     c.drawString(m + 8, boxtop - 14, "SOLD TO")
-    c.setFont("DJSerif", 9)
+    c.setFont(DJSerif, 9)
     b = dataset.BUYER
     for i, line in enumerate([b["name"], b["addr1"], b["addr2"],
                               f"{b['city']}, {b['state']} {b['zip']}"]):
@@ -444,14 +447,14 @@ def layout_classic(c, inv):
     if inv["po_number"]:
         pairs.append(("Customer P.O.", inv["po_number"]))
     for label, val in pairs:
-        c.setFont("DJSerif", 8.5)
+        c.setFont(DJSerif, 8.5)
         c.drawString(rx, ry, f"{label}:")
-        c.setFont("DJSerif-Bold", 8.5)
+        c.setFont(DJSerif_B, 8.5)
         c.drawRightString(W - m - 8, ry, str(val))
         ry -= 12.5
 
     ty = boxtop - boxh - 0.35 * inch
-    c.setFont("DJSerif-Bold", 8.5)
+    c.setFont(DJSerif_B, 8.5)
     c.drawString(m, ty, "QUANTITY")
     c.drawString(m + 0.95 * inch, ty, "DESCRIPTION")
     c.drawRightString(W - m - 1.25 * inch, ty, "PRICE")
@@ -461,7 +464,7 @@ def layout_classic(c, inv):
 
     ry = ty - 20
     for it in inv["line_items"]:
-        c.setFont("DJSerif", 9)
+        c.setFont(DJSerif, 9)
         c.drawString(m, ry, f"{it['quantity']} {it['unit']}")
         c.drawString(m + 0.95 * inch, ry, it["description"][:52])
         c.drawRightString(W - m - 1.25 * inch, ry, fmt(it["unit_price"]))
@@ -472,7 +475,7 @@ def layout_classic(c, inv):
     c.line(W - m - 2.9 * inch, ry + 4, W - m, ry + 4)
     ry -= 12
 
-    c.setFont("DJSerif", 9)
+    c.setFont(DJSerif, 9)
     c.drawRightString(W - m - 1.25 * inch, ry, "Subtotal")
     c.drawRightString(W - m, ry, fmt(inv["subtotal"]))
     ry -= 14
@@ -488,11 +491,11 @@ def layout_classic(c, inv):
     c.setLineWidth(1.2)
     c.line(W - m - 2.9 * inch, ry + 6, W - m, ry + 6)
     ry -= 8
-    c.setFont("DJSerif-Bold", 11)
+    c.setFont(DJSerif_B, 11)
     c.drawRightString(W - m - 1.25 * inch, ry, "TOTAL")
     c.drawRightString(W - m, ry, fmt(inv["total"], symbol=True))
 
-    c.setFont("DJSerif", 8)
+    c.setFont(DJSerif, 8)
     c.drawCentredString(W / 2, 0.72 * inch,
                         "Please remit payment per terms above. A 1.5% monthly service charge applies to past due balances.")
 
@@ -508,21 +511,21 @@ def layout_dense(c, inv):
 
     def header(page_no, total_pages):
         c.setFillColorRGB(0, 0, 0)
-        c.setFont("DJCond-Bold", 13)
+        c.setFont(DJCond_B, 13)
         c.drawString(m, H - 0.52 * inch, v["name"])
-        c.setFont("DJCond", 7.5)
+        c.setFont(DJCond, 7.5)
         c.drawString(m, H - 0.68 * inch,
                      f"{v['addr1']}, {v['city']}, {v['state']} {v['zip']}  |  {v['phone']}")
-        c.setFont("DJCond-Bold", 11)
+        c.setFont(DJCond_B, 11)
         c.drawRightString(W - m, H - 0.52 * inch, "INVOICE")
-        c.setFont("DJCond", 7.5)
+        c.setFont(DJCond, 7.5)
         c.drawRightString(W - m, H - 0.68 * inch, f"Page {page_no} of {total_pages}")
 
         yy = H - 0.92 * inch
         b = dataset.BUYER
-        c.setFont("DJCond-Bold", 7.5)
+        c.setFont(DJCond_B, 7.5)
         c.drawString(m, yy, "BILL TO:")
-        c.setFont("DJCond", 8)
+        c.setFont(DJCond, 8)
         c.drawString(m + 0.55 * inch, yy, f"{b['name']}, {b['addr1']} {b['addr2']}, {b['city']}, {b['state']} {b['zip']}")
 
         yy -= 13
@@ -534,14 +537,14 @@ def layout_dense(c, inv):
         bits.append(f"DUE {fmt_date(inv['due_date'], inv['date_format'])}")
         if inv["po_number"]:
             bits.append(f"CUST PO {inv['po_number']}")
-        c.setFont("DJCond", 8)
+        c.setFont(DJCond, 8)
         c.drawString(m, yy, "   |   ".join(bits))
 
         yy -= 16
         c.setFillColorRGB(0.88, 0.88, 0.88)
         c.rect(m, yy - 3, W - 2 * m, 13, fill=1, stroke=0)
         c.setFillColorRGB(0, 0, 0)
-        c.setFont("DJCond-Bold", 7.5)
+        c.setFont(DJCond_B, 7.5)
         c.drawString(m + 3, yy, "LINE")
         c.drawString(m + 0.42 * inch, yy, "DESCRIPTION")
         c.drawRightString(m + 5.05 * inch, yy, "QTY")
@@ -560,7 +563,7 @@ def layout_dense(c, inv):
         chunk = items[idx:idx + per_page]
         for it in chunk:
             idx += 1
-            c.setFont("DJCond", 7.8)
+            c.setFont(DJCond, 7.8)
             c.drawString(m + 3, ry, f"{idx:03d}")
             c.drawString(m + 0.42 * inch, ry, it["description"][:64])
             c.drawRightString(m + 5.05 * inch, ry, str(it["quantity"]))
@@ -570,7 +573,7 @@ def layout_dense(c, inv):
             ry -= 11
 
         if p < pages:
-            c.setFont("DJCond", 8)
+            c.setFont(DJCond, 8)
             c.drawRightString(W - m - 3, ry - 8, "continued ...")
             c.showPage()
 
@@ -584,11 +587,11 @@ def layout_dense(c, inv):
     if inv["tax_rate"] > 0:
         rows.append((f"TAX {inv['tax_rate'] * 100:.2f}%", inv["tax"]))
     for label, val in rows:
-        c.setFont("DJCond", 8.5)
+        c.setFont(DJCond, 8.5)
         c.drawRightString(W - m - 1.05 * inch, ry, label)
         c.drawRightString(W - m - 3, ry, fmt(val))
         ry -= 12
-    c.setFont("DJCond-Bold", 10)
+    c.setFont(DJCond_B, 10)
     c.drawRightString(W - m - 1.05 * inch, ry - 2, "TOTAL DUE")
     c.drawRightString(W - m - 3, ry - 2, fmt(inv["total"], symbol=True))
 
@@ -603,14 +606,14 @@ def layout_minimal(c, inv):
     m = 1.1 * inch
 
     c.setFillColorRGB(0.1, 0.1, 0.1)
-    c.setFont("LibSans-Bold", 14)
+    c.setFont(LibSans_B, 14)
     c.drawString(m, H - 1.2 * inch, v["name"])
-    c.setFont("LibSans", 9)
+    c.setFont(LibSans, 9)
     c.setFillColorRGB(0.4, 0.4, 0.4)
     c.drawString(m, H - 1.40 * inch, f"{v['addr1']}, {v['city']}, {v['state']} {v['zip']}")
 
     c.setFillColorRGB(0.1, 0.1, 0.1)
-    c.setFont("LibSans", 9)
+    c.setFont(LibSans, 9)
     y = H - 2.1 * inch
     lines = []
     if inv["invoice_number"]:
@@ -632,14 +635,14 @@ def layout_minimal(c, inv):
 
     y -= 36
     for it in inv["line_items"]:
-        c.setFont("LibSans", 9.5)
+        c.setFont(LibSans, 9.5)
         c.setFillColorRGB(0.1, 0.1, 0.1)
         c.drawString(m, y, it["description"][:56])
         c.setFillColorRGB(0.45, 0.45, 0.45)
-        c.setFont("LibSans", 8.5)
+        c.setFont(LibSans, 8.5)
         c.drawString(m, y - 11, f"{it['quantity']} {it['unit']} @ {fmt(it['unit_price'])}")
         c.setFillColorRGB(0.1, 0.1, 0.1)
-        c.setFont("LibSans", 9.5)
+        c.setFont(LibSans, 9.5)
         c.drawRightString(W - m, y, fmt(it["amount"]))
         y -= 28
 
@@ -649,7 +652,7 @@ def layout_minimal(c, inv):
     c.setLineWidth(0.7)
     c.line(m, y + 10, W - m, y + 10)
 
-    c.setFont("LibSans", 9.5)
+    c.setFont(LibSans, 9.5)
     c.drawString(m, y, "Subtotal")
     c.drawRightString(W - m, y, fmt(inv["subtotal"]))
     y -= 18
@@ -664,11 +667,11 @@ def layout_minimal(c, inv):
 
     c.line(m, y + 10, W - m, y + 10)
     y -= 4
-    c.setFont("LibSans-Bold", 11)
+    c.setFont(LibSans_B, 11)
     c.drawString(m, y, "Amount due")
     c.drawRightString(W - m, y, fmt(inv["total"], symbol=True))
 
-    c.setFont("LibSans", 8)
+    c.setFont(LibSans, 8)
     c.setFillColorRGB(0.5, 0.5, 0.5)
     c.drawString(m, 0.9 * inch, f"Questions? {v['phone']}")
 
@@ -688,12 +691,14 @@ def layout_scanned(c, inv):
     d = ImageDraw.Draw(img)
 
     def F(name, size):
-        path = {
-            "r": DEJAVU / "DejaVuSans.ttf",
-            "b": DEJAVU / "DejaVuSans-Bold.ttf",
-            "m": DEJAVU / "DejaVuSansMono.ttf",
-        }[name]
-        return ImageFont.truetype(str(path), size)
+        role = {"r": "sans", "b": "sans-bold", "m": "mono"}[name]
+        path = fonts.truetype_path(role)
+        if path is None:
+            # PIL has no built-in scalable font, so a machine with no usable
+            # TTF gets a fixed-size bitmap and a cosmetically poorer scan.
+            # Generation still completes, which is what matters.
+            return ImageFont.load_default()
+        return ImageFont.truetype(path, size)
 
     v = inv["vendor"]
     M = int(0.8 * dpi)
@@ -921,7 +926,11 @@ def main():
         seed_error(inv, kind, invoices)
 
     for inv in invoices:
-        c = rl_canvas.Canvas(str(PDF_DIR / f"{inv['file_id']}.pdf"), pagesize=letter)
+        # invariant=1 strips the embedded creation timestamp and document ID.
+        # Without it, regenerating an unchanged set still rewrites all 24 PDFs
+        # at the byte level, so `git status` reports modifications that aren't.
+        c = rl_canvas.Canvas(str(PDF_DIR / f"{inv['file_id']}.pdf"),
+                             pagesize=letter, invariant=1)
         c.setTitle(f"Invoice {inv['invoice_number'] or '(no number)'}")
         c.setAuthor(inv["vendor_name"])
         c.setSubject("Fictitious invoice — synthetic test data")

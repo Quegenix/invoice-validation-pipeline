@@ -3,6 +3,8 @@
 Ingest → extract → validate → route. PDFs in, posted records and a review
 queue out.
 
+> Commands below use `python3`. On Windows use `py` instead.
+
 ```
 python3 pipeline/run.py                       # clean extraction
 python3 pipeline/run.py --noise 0.30 --seed 11   # with realistic misreads

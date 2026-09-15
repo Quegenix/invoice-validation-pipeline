@@ -110,6 +110,8 @@ is the end-to-end answer the pipeline should arrive at.
 
 ## Verifying the set
 
+> Commands below use `python3`. On Windows use `py` instead.
+
 ```
 python3 verify_testset.py
 ```

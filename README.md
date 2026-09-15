@@ -67,6 +67,8 @@ better extractor would never help.
 
 ## Quickstart
 
+> Commands below use `python3`. On Windows use `py` instead.
+
 ```bash
 pip install -r requirements.txt
 
@@ -133,6 +135,8 @@ separately.
 ```
 generate_invoices.py    builds the test set (seeded — reproducible)
 dataset.py              fictitious companies, vendors, line-item catalogs
+fonts.py                cross-platform font resolution — run it directly
+                        to see what your machine provides
 verify_testset.py       self-test: proves every seeded defect is detectable
                         and no clean document is flagged
 
