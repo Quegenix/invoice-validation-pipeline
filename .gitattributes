@@ -1,0 +1,17 @@
+# Generated text output is committed to this repo, so its bytes must not
+# depend on which OS produced it. The generators write LF explicitly
+# (write_text(..., newline="\n")); these rules keep the checkout matching.
+
+*.json  text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.py    text eol=lf
+
+# out/vendors.csv is written by csv.writer, which emits CRLF per RFC 4180.
+# -text keeps its bytes verbatim in both the index and the checkout, so it
+# stays byte-identical to what `py generate_invoices.py` produces.
+# Do not give it eol=lf -- that would leave it permanently dirty.
+*.csv   -text
+
+*.pdf   binary
+*.png   binary

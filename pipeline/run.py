@@ -152,8 +152,9 @@ def main():
         "fields_checked": total_fields,
     }
 
-    (OUT / "results.json").write_text(json.dumps(
-        {"summary": summary, "documents": results}, indent=2))
+    (OUT / "results.json").write_text(
+        json.dumps({"summary": summary, "documents": results}, indent=2),
+        newline="\n", encoding="utf-8")
 
     # ---- report -------------------------------------------------------------
     print()

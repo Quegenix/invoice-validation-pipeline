@@ -289,5 +289,5 @@ extractor was merely unsure about.
 </footer>
 </div></body></html>'''
 
-    Path(out_path).write_text(doc)
+    Path(out_path).write_text(doc, newline="\n", encoding="utf-8")
     return out_path

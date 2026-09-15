@@ -961,7 +961,8 @@ def main():
         "documents": [serialise(i) for i in invoices],
     }
 
-    (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2),
+                                       newline="\n", encoding="utf-8")
 
     with open(OUT / "vendors.csv", "w", newline="") as f:
         w = csv.writer(f)
