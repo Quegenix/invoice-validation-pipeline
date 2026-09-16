@@ -9,7 +9,7 @@ are the opposite: cheap, deterministic, and they answer a different question.
 Not "did we read it correctly" but "is what we read internally consistent and
 safe to post."
 
-Four of the seven rules below catch documents that are perfectly legible and
+Several of the rules below catch documents that are perfectly legible and
 still wrong. No better extractor would help. That is the argument for having
 a validation layer at all.
 
@@ -18,6 +18,7 @@ Every rule returns a Finding with a severity:
     WARN   — post is defensible, but somebody should know
 """
 
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -31,8 +32,85 @@ WARN = "WARN"
 # slack stops that from generating noise; anything larger is a real defect.
 CENT = Decimal("0.01")
 
+# Half a cent per unit. A vendor that prints a unit price rounded to two
+# decimals but extends the line from more precision can be off by at most
+# this much, and that is not a defect. Anything beyond it is.
+HALF_CENT_PER_UNIT = Decimal("0.005")
+
 STALE_AFTER_DAYS = 365
 FUTURE_GRACE_DAYS = 1
+
+
+_SUFFIXES = re.compile(
+    r"\b(inc|incorporated|llc|l l c|ltd|limited|co|corp|corporation|company"
+    r"|plc|lp|llp)\b")
+
+
+def normalize_vendor(name: str) -> str:
+    """
+    Fold away the things that differ between two printings of the same
+    vendor and never distinguish two different vendors: letter case,
+    punctuation, '&' vs 'and', a leading 'The', and a corporate suffix.
+
+    'EVERLINE FASTENER & HARDWARE'  ->  'everline fastener and hardware'
+    'Joplin Air Handling Co.'       ->  'joplin air handling'
+    """
+    s = (name or "").casefold().replace("&", " and ")
+    s = re.sub(r"[^\w\s]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"^the\s+", "", s)
+    s = _SUFFIXES.sub("", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+class VendorIndex:
+    """
+    Resolves a vendor name as read off a page to a name on the master list.
+
+    Three tiers, all of them exact string identity on a progressively more
+    forgiving normalization. There is deliberately no similarity score here.
+    On the sets this has been measured against, a genuine variant resolves
+    at tier 'spacing' or better while the nearest unrelated vendor pair
+    scores around 0.5 on any sequence-similarity metric — so a threshold
+    would be a tunable with nothing to tune it against, and a wrong guess
+    would silently post one vendor's invoice against another's account.
+    A name this cannot resolve deterministically is reported unresolved and
+    a human decides.
+
+    The squashed tier is skipped entirely if the master list itself has two
+    vendors that collapse together, since resolution would be a coin flip.
+    """
+
+    def __init__(self, names):
+        self.names = [n for n in names if n]
+        self._exact = set(self.names)
+        self._norm, self._squash = {}, {}
+        for n in self.names:
+            self._norm.setdefault(normalize_vendor(n), n)
+            self._squash.setdefault(normalize_vendor(n).replace(" ", ""), n)
+        self.squash_usable = len(self._squash) == len(set(self._norm.values()))
+
+    def resolve(self, name: str):
+        """Return (canonical_name, tier) or (None, None)."""
+        raw = (name or "").strip()
+        if not raw:
+            return None, None
+        if raw in self._exact:
+            return raw, "exact"
+        n = normalize_vendor(raw)
+        if n in self._norm:
+            return self._norm[n], "normalized"
+        if self.squash_usable:
+            hit = self._squash.get(n.replace(" ", ""))
+            if hit:
+                return hit, "spacing"
+        return None, None
+
+
+def _as_index(known_vendors):
+    if isinstance(known_vendors, VendorIndex):
+        return known_vendors
+    return VendorIndex(known_vendors or [])
 
 
 @dataclass
@@ -46,6 +124,7 @@ class Finding:
 @dataclass
 class ValidationResult:
     findings: list = field(default_factory=list)
+    resolved_vendor: str = ""
 
     @property
     def blocked(self) -> bool:
@@ -82,6 +161,7 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
     (vendor, invoice_number) pairs already processed.
     """
     res = ValidationResult()
+    vendors = _as_index(known_vendors)
 
     # ---------------------------------------------------------------
     # 1. Line items must sum to the stated subtotal.
@@ -105,7 +185,41 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
             ))
 
     # ---------------------------------------------------------------
-    # 2. subtotal + tax + freight must equal the stated total.
+    # 2. Each line's quantity times unit price must equal its extension.
+    #
+    # The line-sum rule above only checks the column total, so two errors
+    # on different lines that happen to offset will pass it. This rule
+    # checks each line against itself and does not care about the column.
+    #
+    # It is the only rule here that catches a misread which leaves every
+    # total on the page reconciling — the right amount payable against the
+    # wrong line detail. Arithmetic the document asserts about itself, so
+    # a failure is a fact, not a policy judgement.
+    # ---------------------------------------------------------------
+    bad_lines = []
+    for n, item in enumerate(items, start=1):
+        qty = _dec(item.get("quantity"))
+        price = _dec(item.get("unit_price"))
+        amount = _dec(item.get("amount"))
+        if qty is None or price is None or amount is None:
+            continue          # line does not print the parts; rule 1 covers it
+        extended = (qty * price).quantize(CENT)
+        gap = (extended - amount).copy_abs()
+        tolerance = max(CENT, (qty.copy_abs() * HALF_CENT_PER_UNIT))
+        if gap > tolerance:
+            bad_lines.append(
+                f"line {n}: {qty} x {price} = {extended:,.2f} but the line "
+                f"reads {amount:,.2f} (off by {gap:,.2f})")
+    if bad_lines:
+        res.findings.append(Finding(
+            "LINE_EXTENSION_MISMATCH", BLOCK,
+            "A line's quantity times unit price does not equal its amount"
+            + (f" ({len(bad_lines)} lines)" if len(bad_lines) > 1 else ""),
+            "; ".join(bad_lines),
+        ))
+
+    # ---------------------------------------------------------------
+    # 3. subtotal + tax + freight must equal the stated total.
     # Catches charges that appear on the page but never made it into
     # what the vendor is actually asking for — in either direction.
     # ---------------------------------------------------------------
@@ -124,26 +238,53 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
         ))
 
     # ---------------------------------------------------------------
-    # 3. Vendor must resolve against the master list.
+    # 4. Vendor must resolve against the master list.
+    #
     # A document can be flawless and still be from someone you have no
     # relationship with. Only a lookup catches it.
+    #
+    # The lookup is forgiving about how the name is printed and strict
+    # about who it belongs to. A letterhead set in capitals, a trailing
+    # 'Co.', 'Sheetmetal' written as 'Sheet Metal' — those are the same
+    # vendor and resolving them is the system's job, not the bookkeeper's.
+    # What posts is the canonical name, so the ledger stays single-valued
+    # however the vendor chose to print it that month.
     # ---------------------------------------------------------------
     vendor = (record.get("vendor_name") or "").strip()
+    resolved = vendor
     if not vendor:
+        resolved = ""
         res.findings.append(Finding(
             "MISSING_VENDOR", BLOCK,
             "No vendor name could be read from the document",
         ))
-    elif vendor not in known_vendors:
-        res.findings.append(Finding(
-            "UNKNOWN_VENDOR", BLOCK,
-            "Vendor is not in the vendor master list",
-            f"read as '{vendor}' — either a new vendor needing setup, a "
-            f"misread name, or a document that should not be here at all",
-        ))
+    else:
+        canonical, tier = vendors.resolve(vendor)
+        if canonical is None:
+            res.findings.append(Finding(
+                "UNKNOWN_VENDOR", BLOCK,
+                "Vendor is not in the vendor master list",
+                f"read as '{vendor}' — either a new vendor needing setup, a "
+                f"misread name, or a document that should not be here at all",
+            ))
+        else:
+            resolved = canonical
+            if tier != "exact":
+                res.findings.append(Finding(
+                    "VENDOR_NAME_VARIANT", WARN,
+                    "Vendor name is printed differently from the master list",
+                    f"read as '{vendor}', posting against '{canonical}' "
+                    f"(matched on {tier}) — same vendor, no action needed, "
+                    f"recorded so the resolution is auditable",
+                ))
+
+    # The canonical name is what any downstream write should use. Putting it
+    # on the record means results.json and every adapter see it for free.
+    record["vendor_name_resolved"] = resolved
+    res.resolved_vendor = resolved
 
     # ---------------------------------------------------------------
-    # 4 & 5. Invoice number present, and not already seen for this vendor.
+    # 5 & 6. Invoice number present, and not already seen for this vendor.
     # Duplicate payment is the expensive failure in AP. It is also the
     # one that is hardest to notice after the fact.
     # ---------------------------------------------------------------
@@ -155,7 +296,11 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
             "nothing to duplicate-check against, so this cannot post unattended",
         ))
     else:
-        key = (vendor.lower(), inv_no.lower())
+        # Keyed on the resolved name, not the printed one. Keying on what
+        # the page happened to say would make 'GRANGER INDUSTRIAL GAS' and
+        # 'Granger Industrial Gas' two separate ledgers and let the same
+        # invoice through twice — the exact failure this rule exists for.
+        key = (resolved.casefold(), inv_no.casefold())
         if key in seen_keys:
             res.findings.append(Finding(
                 "DUPLICATE_INVOICE_NO", BLOCK,
@@ -166,7 +311,7 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
         seen_keys.add(key)
 
     # ---------------------------------------------------------------
-    # 6 & 7. Date sanity.
+    # 7 & 8. Date sanity.
     # ---------------------------------------------------------------
     d = record.get("invoice_date")
     parsed = None
