@@ -200,7 +200,7 @@ class ClaudeExtractor:
 
     name = "claude"
 
-    def __init__(self, model="claude-sonnet-4-20250514", max_tokens=8000):
+    def __init__(self, model="claude-sonnet-5", max_tokens=8000):
         try:
             import anthropic
         except ImportError:
@@ -238,7 +238,14 @@ class ClaudeExtractor:
             }],
         )
 
-        text = msg.content[0].text.strip()
+        # The response may lead with thinking blocks, so take the first
+        # actual text block rather than assuming index 0.
+        blocks = [b for b in msg.content if getattr(b, "type", None) == "text"]
+        if not blocks:
+            raise RuntimeError(
+                f"No text block in the response for {Path(pdf_path).name}; "
+                f"got {[getattr(b, 'type', '?') for b in msg.content]}")
+        text = blocks[0].text.strip()
         # Models like to wrap JSON in fences regardless of instruction.
         if text.startswith("```"):
             text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)

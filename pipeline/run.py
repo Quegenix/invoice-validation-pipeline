@@ -6,6 +6,13 @@ Invoice processing pipeline: ingest -> extract -> validate -> route.
     python3 pipeline/run.py --noise 0.25       # mock, with realistic misreads
     python3 pipeline/run.py --extractor claude # real vision extraction
 
+Against a real client folder — no manifest, no ground truth:
+
+    python3 pipeline/run.py --extractor claude
+        --input "C:/Invoice Cleanup/Acme/invoices"
+        --vendors approved_vendors.csv
+        --client-name "Acme Mechanical"
+
 Outputs:
     out/results.json     every document, what was read, what was found, where it went
     out/review.html      the review queue — flagged documents with their PDFs
@@ -19,9 +26,16 @@ Two numbers matter and they measure different things:
 
   Routing — did the right documents get held? A pipeline that posts everything
   is fast and wrong. One that holds everything is safe and useless.
+
+Both of those are scored against the manifest, which only describes the
+generated test set. Point --input at anything else and the manifest does not
+apply: the pipeline runs in client mode, reports routing only, and omits every
+number it cannot honestly compute. Reporting demo ground truth against client
+documents would be worse than crashing.
 """
 
 import argparse
+import csv
 import json
 import sys
 from datetime import date
@@ -35,8 +49,27 @@ from extractors import MockExtractor, ClaudeExtractor  # noqa: E402
 
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "out"
-PDF_DIR = OUT / "invoices"
+DEMO_PDF_DIR = OUT / "invoices"
 MANIFEST = OUT / "manifest.json"
+
+
+def load_vendor_csv(path):
+    """
+    Approved-vendor list. First column is the vendor name; everything else is
+    ignored, so a full vendor export works as-is. A header row naming the first
+    column something vendor-ish is skipped.
+    """
+    names = []
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        for row in csv.reader(f):
+            if row and row[0].strip():
+                names.append(row[0].strip())
+    if names and names[0].lower().replace(" ", "").replace("_", "") in (
+            "vendorname", "vendor", "name", "payee", "supplier", "suppliername"):
+        names.pop(0)
+    if not names:
+        sys.exit(f"No vendor names in first column of {path}.")
+    return set(names)
 
 
 def norm_money(v):
@@ -84,21 +117,63 @@ def main():
     ap.add_argument("--noise", type=float, default=0.0,
                     help="mock only: probability of an injected misread")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--input", metavar="DIR",
+                    help="folder of PDFs to process (default: the generated "
+                         "test set in out/invoices)")
+    ap.add_argument("--vendors", metavar="CSV",
+                    help="approved vendor list; first column is the vendor "
+                         "name. Replaces the manifest's known_vendors.")
+    ap.add_argument("--client-name", metavar="NAME",
+                    help="name shown on the review page header")
     args = ap.parse_args()
 
-    manifest = json.loads(MANIFEST.read_text())
-    truth = {d["file"]: d for d in manifest["documents"]}
-    known_vendors = set(manifest["known_vendors"])
-    today = date.fromisoformat(manifest["generated_on"])
+    pdf_dir = Path(args.input).expanduser() if args.input else DEMO_PDF_DIR
+    # The manifest describes exactly one folder. Anywhere else, it does not apply.
+    demo = pdf_dir.resolve() == DEMO_PDF_DIR.resolve()
+
+    manifest = None
+    truth = {}
+
+    if demo:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        truth = {d["file"]: d for d in manifest["documents"]}
+        known_vendors = set(manifest["known_vendors"])
+        today = date.fromisoformat(manifest["generated_on"])
+        buyer = args.client_name or manifest["buyer"]
+    else:
+        # No manifest: no ground truth, and no pretending otherwise.
+        known_vendors = set()
+        today = date.today()
+        buyer = args.client_name or pdf_dir.name
+
+        if args.extractor == "mock":
+            sys.exit(
+                f"--extractor mock cannot run against {pdf_dir}.\n"
+                "MockExtractor does not read PDFs - it replays "
+                "out/manifest.json, which only\n"
+                "describes the generated test set. There is nothing for it "
+                "to replay here.\n"
+                "Use --extractor claude.")
+
+    if args.vendors:
+        known_vendors = load_vendor_csv(Path(args.vendors).expanduser())
+    elif not demo:
+        print(f"\n  WARNING: no --vendors given, so no vendor is approved and "
+              f"every document\n           will be held as UNKNOWN_VENDOR. "
+              f"Pass --vendors to get real routing.")
 
     if args.extractor == "mock":
         extractor = MockExtractor(MANIFEST, noise=args.noise, seed=args.seed)
     else:
         extractor = ClaudeExtractor()
 
-    pdfs = sorted(PDF_DIR.glob("*.pdf"))
+    if not pdf_dir.is_dir():
+        sys.exit(f"Not a directory: {pdf_dir}")
+
+    pdfs = sorted(pdf_dir.glob("*.pdf"))
     if not pdfs:
-        sys.exit(f"No PDFs in {PDF_DIR}. Run generate_invoices.py first.")
+        sys.exit(f"No PDFs in {pdf_dir}."
+                 + (" Run generate_invoices.py first." if demo else ""))
 
     seen_keys = set()
     results = []
@@ -107,50 +182,69 @@ def main():
         record = extractor.extract(pdf)
         vr = validate(record, known_vendors=known_vendors,
                       seen_keys=seen_keys, today=today)
-        t = truth[pdf.name]
 
-        results.append({
-            "file": pdf.name,
-            "layout": t["layout"],
-            "disposition": vr.disposition,
-            "findings": [
-                {"code": f.code, "severity": f.severity,
-                 "message": f.message, "detail": f.detail}
-                for f in vr.findings
-            ],
-            "extracted": record,
-            "extraction_score": score_extraction(record, t),
-            "injected_misread": getattr(extractor, "injected", {}).get(pdf.name),
-            "seeded_defect": t["seeded_error"],
-            "expected_disposition": t["expected_disposition"],
-        })
+        # Manifest-derived fields are omitted in client mode rather than
+        # defaulted — a 0 that looks like a measurement is the failure mode
+        # being avoided. Key order matches the demo output it replaces.
+        t = truth.get(pdf.name)
 
-    # ---- routing correctness ------------------------------------------------
+        row = {"file": pdf.name}
+        if demo:
+            row["layout"] = t["layout"]
+        row["disposition"] = vr.disposition
+        row["findings"] = [
+            {"code": f.code, "severity": f.severity,
+             "message": f.message, "detail": f.detail}
+            for f in vr.findings
+        ]
+        row["extracted"] = record
+        if demo:
+            row["extraction_score"] = score_extraction(record, t)
+            row["injected_misread"] = getattr(extractor, "injected", {}).get(pdf.name)
+            row["seeded_defect"] = t["seeded_error"]
+            row["expected_disposition"] = t["expected_disposition"]
+
+        results.append(row)
+
+    # ---- routing ------------------------------------------------------------
     posted = [r for r in results if r["disposition"] == "POST"]
     held = [r for r in results if r["disposition"] == "REVIEW"]
-
-    # A hold is correct if the document had a seeded defect OR extraction
-    # genuinely went wrong on it. Both are real reasons to want a human.
-    correct_holds = [r for r in held
-                     if r["seeded_defect"] or r["injected_misread"]]
-    false_holds = [r for r in held if r not in correct_holds]
-    missed = [r for r in posted if r["seeded_defect"]]
-
-    total_fields = sum(r["extraction_score"]["fields_checked"] for r in results)
-    ok_fields = sum(r["extraction_score"]["fields_correct"] for r in results)
 
     summary = {
         "extractor": extractor.name,
         "noise": args.noise if args.extractor == "mock" else None,
+        "scored_against_manifest": demo,
         "documents": len(results),
         "posted": len(posted),
         "held_for_review": len(held),
-        "holds_with_a_real_cause": len(correct_holds),
-        "holds_without_cause": len(false_holds),
-        "defects_missed": len(missed),
-        "extraction_field_accuracy": round(ok_fields / total_fields, 4),
-        "fields_checked": total_fields,
     }
+
+    if not demo:
+        # Recorded off the demo path only: an absolute local path in the
+        # committed out/results.json would differ on every machine.
+        summary["input"] = str(pdf_dir.resolve())
+
+    correct_holds = false_holds = missed = []
+    ok_fields = total_fields = 0
+
+    if demo:
+        # A hold is correct if the document had a seeded defect OR extraction
+        # genuinely went wrong on it. Both are real reasons to want a human.
+        correct_holds = [r for r in held
+                         if r["seeded_defect"] or r["injected_misread"]]
+        false_holds = [r for r in held if r not in correct_holds]
+        missed = [r for r in posted if r["seeded_defect"]]
+
+        total_fields = sum(r["extraction_score"]["fields_checked"] for r in results)
+        ok_fields = sum(r["extraction_score"]["fields_correct"] for r in results)
+
+        summary.update({
+            "holds_with_a_real_cause": len(correct_holds),
+            "holds_without_cause": len(false_holds),
+            "defects_missed": len(missed),
+            "extraction_field_accuracy": round(ok_fields / total_fields, 4),
+            "fields_checked": total_fields,
+        })
 
     (OUT / "results.json").write_text(
         json.dumps({"summary": summary, "documents": results}, indent=2),
@@ -160,25 +254,37 @@ def main():
     print()
     print(f"  extractor            {extractor.name}"
           + (f"   noise={args.noise}" if args.extractor == "mock" else ""))
+    if not demo:
+        print(f"  input                {pdf_dir}")
+        print(f"  approved vendors     {len(known_vendors)}")
     print(f"  documents            {len(results)}")
     print()
     print(f"  posted               {len(posted)}")
     print(f"  held for review      {len(held)}")
     print()
-    print(f"  extraction accuracy  {summary['extraction_field_accuracy'] * 100:.1f}%"
-          f"  ({ok_fields}/{total_fields} fields)")
-    print(f"  defects missed       {len(missed)}")
-    print(f"  holds without cause  {len(false_holds)}")
+
+    if demo:
+        print(f"  extraction accuracy  {summary['extraction_field_accuracy'] * 100:.1f}%"
+              f"  ({ok_fields}/{total_fields} fields)")
+        print(f"  defects missed       {len(missed)}")
+        print(f"  holds without cause  {len(false_holds)}")
+    else:
+        print("  no manifest for this folder: extraction accuracy and defect")
+        print("  counts are not reported, because nothing here can measure them.")
     print()
 
     if held:
         print("  HELD")
         for r in held:
             why = r["findings"][0]["code"] if r["findings"] else "?"
-            src = ("seeded: " + r["seeded_defect"]) if r["seeded_defect"] else \
-                  ("misread: " + r["injected_misread"][:44]) if r["injected_misread"] else \
-                  "no known cause"
-            print(f"    {r['file']:<12} {r['layout']:<9} {why:<22} {src}")
+            if demo:
+                src = ("seeded: " + r["seeded_defect"]) if r["seeded_defect"] else \
+                      ("misread: " + r["injected_misread"][:44]) if r["injected_misread"] else \
+                      "no known cause"
+                print(f"    {r['file']:<12} {r['layout']:<9} {why:<22} {src}")
+            else:
+                vendor = str(r["extracted"].get("vendor_name") or "?")[:28]
+                print(f"    {r['file']:<28} {why:<22} {vendor}")
         print()
 
     if missed:
@@ -188,7 +294,8 @@ def main():
         print()
 
     import review
-    review.build(OUT / "results.json", OUT / "review.html", manifest)
+    review.build(OUT / "results.json", OUT / "review.html",
+                 buyer=buyer, pdf_dir=pdf_dir, demo=demo)
     print(f"  review queue         {OUT / 'review.html'}")
     print(f"  full results         {OUT / 'results.json'}")
     print()
