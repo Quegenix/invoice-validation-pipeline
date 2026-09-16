@@ -32,21 +32,34 @@ SEVERITY_ORDER = {"BLOCK": 0, "WARN": 1}
 
 
 def page_png(pdf_path: Path, dpi=105) -> str:
-    """First page of a PDF as a base64 PNG data URI."""
-    if not shutil.which("pdftoppm"):
+    """
+    First page of a PDF as a base64 PNG data URI, or "" if it cannot be
+    rendered for any reason.
+
+    This never raises. It is called at the very end of a run, after the
+    extraction has already been paid for, and a report with missing page
+    images is worth far more than a traceback that loses the whole run.
+    Poppler absent, a file that moved, a PDF the renderer chokes on, a
+    pathological page that would hang — all degrade to no image.
+    """
+    if not shutil.which("pdftoppm") or not Path(pdf_path).is_file():
         return ""
-    with tempfile.TemporaryDirectory() as td:
-        stem = Path(td) / "pg"
-        subprocess.run(
-            ["pdftoppm", "-png", "-r", str(dpi), "-f", "1", "-l", "1",
-             str(pdf_path), str(stem)],
-            check=True, capture_output=True,
-        )
-        pngs = sorted(Path(td).glob("pg*.png"))
-        if not pngs:
-            return ""
-        return "data:image/png;base64," + base64.b64encode(
-            pngs[0].read_bytes()).decode()
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            stem = Path(td) / "pg"
+            subprocess.run(
+                ["pdftoppm", "-png", "-r", str(dpi), "-f", "1", "-l", "1",
+                 str(pdf_path), str(stem)],
+                check=True, capture_output=True, timeout=30,
+            )
+            pngs = sorted(Path(td).glob("pg*.png"))
+            if not pngs:
+                return ""
+            return "data:image/png;base64," + base64.b64encode(
+                pngs[0].read_bytes()).decode()
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
+            OSError):
+        return ""
 
 
 def money(v):
@@ -56,18 +69,29 @@ def money(v):
         return html.escape(str(v)) if v is not None else "—"
 
 
-def build(results_path, out_path, manifest):
-    data = json.loads(Path(results_path).read_text())
+def build(results_path, out_path, buyer, pdf_dir=None, demo=True):
+    """
+    `demo` says whether the run was scored against the manifest. When it is
+    False there is no ground truth, so the accuracy and defect columns are
+    left out entirely rather than rendered as zeroes.
+    """
+    data = json.loads(Path(results_path).read_text(encoding="utf-8"))
     summary = data["summary"]
     docs = data["documents"]
-    pdf_dir = Path(results_path).parent / "invoices"
+    # None means no images. It used to fall back to a guessed directory,
+    # which in client mode quietly rendered the demo invoices next to the
+    # client's numbers.
+    pdf_dir = Path(pdf_dir) if pdf_dir else None
 
     held = [d for d in docs if d["disposition"] == "REVIEW"]
     posted = [d for d in docs if d["disposition"] == "POST"]
 
     cards = []
+    no_image = 0
     for d in held:
-        img = page_png(pdf_dir / d["file"])
+        img = page_png(pdf_dir / d["file"]) if pdf_dir else ""
+        if not img:
+            no_image += 1
         ex = d["extracted"]
         findings = sorted(d["findings"],
                           key=lambda f: SEVERITY_ORDER.get(f["severity"], 9))
@@ -99,10 +123,10 @@ def build(results_path, out_path, manifest):
         )
 
         cause = ""
-        if d["injected_misread"]:
+        if d.get("injected_misread"):
             cause = (f'<div class="cause misread"><b>Simulated misread:</b> '
                      f'{html.escape(d["injected_misread"])}</div>')
-        elif d["seeded_defect"]:
+        elif d.get("seeded_defect"):
             cause = (f'<div class="cause seeded"><b>Seeded into the test set:</b> '
                      f'{html.escape(d["seeded_defect"])}</div>')
 
@@ -110,7 +134,7 @@ def build(results_path, out_path, manifest):
 <section class="card">
   <div class="card-head">
     <h2>{html.escape(d["file"])}</h2>
-    <span class="layout">{html.escape(d["layout"])} layout</span>
+    {f'<span class="layout">{html.escape(d["layout"])} layout</span>' if d.get("layout") else ''}
     <span class="badge hold">HELD</span>
   </div>
   <div class="split">
@@ -147,21 +171,85 @@ def build(results_path, out_path, manifest):
   </div>
 </section>''')
 
+    # A document can post and still carry a warning — most often a vendor
+    # name that resolved to the master list from a different printing. That
+    # resolution has to be visible somewhere, and the posted table is the
+    # only place anyone will see it, because by definition nobody is going
+    # to open these one at a time.
+    def posted_note(p):
+        notes = []
+        for f in p.get("findings", []):
+            if f.get("severity") != "WARN":
+                continue
+            if f["code"] == "VENDOR_NAME_VARIANT":
+                printed = p["extracted"].get("vendor_name") or ""
+                notes.append(f'printed as "{printed}"')
+            else:
+                notes.append(f["message"])
+        return "; ".join(notes)
+
+    notes = {p["file"]: posted_note(p) for p in posted}
+    any_notes = any(notes.values())
+
     posted_rows = "".join(
         f'''<tr><td>{html.escape(p["file"])}</td>
-                <td>{html.escape(p["layout"])}</td>
-                <td>{html.escape(str(p["extracted"].get("vendor_name") or "—"))}</td>
+                {f'<td>{html.escape(p["layout"])}</td>' if demo else ''}
+                <td>{html.escape(str(p["extracted"].get("vendor_name_resolved")
+                                     or p["extracted"].get("vendor_name") or "—"))}</td>
                 <td class="num">{money(p["extracted"].get("total"))}</td>
-                <td class="num acc">{p["extraction_score"]["field_accuracy"] * 100:.0f}%</td></tr>'''
+                {f'<td class="note">{html.escape(notes[p["file"]])}</td>' if any_notes else ''}
+                {f'<td class="num acc">{p["extraction_score"]["field_accuracy"] * 100:.0f}%</td>' if demo else ''}</tr>'''
         for p in posted
     )
 
-    acc = summary["extraction_field_accuracy"] * 100
+    # If page images are missing, say so. A reviewer looking at a card with
+    # an empty pane has no way to tell whether the document is blank or the
+    # renderer is. Silent degradation is the one failure this report cannot
+    # afford, since its entire job is making a machine's reading checkable
+    # against the page.
+    degraded = ""
+    if held and no_image:
+        if not shutil.which("pdftoppm"):
+            why = ("poppler is not installed, so no page images could be "
+                   "rendered — install it to compare each reading against "
+                   "the document it came from")
+        elif not pdf_dir:
+            why = "no source directory was given, so page images were skipped"
+        else:
+            why = (f"{no_image} of {len(held)} pages could not be rendered "
+                   f"from {pdf_dir}")
+        degraded = (f'<div class="degraded"><strong>Page images '
+                    f'unavailable</strong> — {html.escape(why)}.</div>')
+
+    posted_head = ("<th>File</th>"
+                   + ("<th>Layout</th>" if demo else "")
+                   + "<th>Vendor</th><th class=\"num\">Total</th>"
+                   + ("<th>Note</th>" if any_notes else "")
+                   + ("<th class=\"num\">Field acc.</th>" if demo else ""))
+
+    # Ground-truth tiles only exist when there is ground truth.
+    if demo:
+        acc = summary["extraction_field_accuracy"] * 100
+        truth_stats = (
+            f'<div class="stat"><div class="n">{acc:.1f}%</div>'
+            f'<div class="l">Field accuracy</div></div>'
+            f'<div class="stat"><div class="n">{summary["defects_missed"]}</div>'
+            f'<div class="l">Defects missed</div></div>'
+            f'<div class="stat"><div class="n">{summary["holds_without_cause"]}</div>'
+            f'<div class="l">Holds w/o cause</div></div>')
+        footer_note = (
+            "Every vendor, amount and address in this queue is fictitious test data.")
+    else:
+        truth_stats = ""
+        footer_note = (
+            "This run had no manifest, so extraction accuracy and defect counts "
+            "are not shown — there is nothing to measure them against. Routing "
+            "below is the pipeline's own judgement, not a scored result.")
 
     doc = f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AP Review Queue — {html.escape(manifest["buyer"])}</title>
+<title>AP Review Queue — {html.escape(str(buyer))}</title>
 <style>
 :root {{
   --bg:#f6f7f9; --panel:#ffffff; --ink:#16191d; --muted:#6b7280;
@@ -249,6 +337,9 @@ button:hover {{ filter:brightness(1.08); }}
   border-radius:11px; overflow-x:auto; }}
 .posted table {{ margin:0; min-width:560px; }}
 .posted th, .posted td {{ padding:8px 14px; }}
+.posted td.note {{ color:var(--muted); font-size:12px; }}
+.degraded {{ background:#3a2a12; border:1px solid #6b4a1c; color:#e8c98a;
+  padding:10px 14px; border-radius:6px; margin:18px 0 0; font-size:13px; }}
 .acc {{ color:var(--ok); }}
 footer {{ color:var(--muted); font-size:11.5px; margin-top:30px;
   border-top:1px solid var(--line); padding-top:14px; }}
@@ -260,29 +351,27 @@ footer {{ color:var(--muted); font-size:11.5px; margin-top:30px;
 <div class="wrap">
 <header>
   <h1>Accounts Payable — Review Queue</h1>
-  <div class="sub">{html.escape(manifest["buyer"])} · {summary["documents"]} documents processed ·
+  <div class="sub">{html.escape(str(buyer))} · {summary["documents"]} documents processed ·
     extractor: {html.escape(str(summary["extractor"]))}</div>
 </header>
 
 <div class="stats">
   <div class="stat ok"><div class="n">{summary["posted"]}</div><div class="l">Posted</div></div>
   <div class="stat hold"><div class="n">{summary["held_for_review"]}</div><div class="l">Held</div></div>
-  <div class="stat"><div class="n">{acc:.1f}%</div><div class="l">Field accuracy</div></div>
-  <div class="stat"><div class="n">{summary["defects_missed"]}</div><div class="l">Defects missed</div></div>
-  <div class="stat"><div class="n">{summary["holds_without_cause"]}</div><div class="l">Holds w/o cause</div></div>
+  {truth_stats}
 </div>
 
+{degraded}
 <h3 class="sec">Held for review — {len(held)} document{"s" if len(held) != 1 else ""}</h3>
 {"".join(cards) if cards else '<div class="card"><div class="detail">Nothing held.</div></div>'}
 
 <h3 class="sec">Posted automatically — {len(posted)} documents</h3>
 <div class="posted"><table>
-<thead><tr><th>File</th><th>Layout</th><th>Vendor</th>
-<th class="num">Total</th><th class="num">Field acc.</th></tr></thead>
+<thead><tr>{posted_head}</tr></thead>
 <tbody>{posted_rows}</tbody></table></div>
 
 <footer>
-Every vendor, amount and address in this queue is fictitious test data.
+{footer_note}
 Held documents are those where a deterministic rule found the record either
 internally inconsistent or unsafe to post unattended — not documents the
 extractor was merely unsure about.
