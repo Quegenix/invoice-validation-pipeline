@@ -2,6 +2,7 @@
   "summary": {
     "extractor": "mock",
     "noise": 0.3,
+    "scored_against_manifest": true,
     "documents": 24,
     "posted": 12,
     "held_for_review": 12,
@@ -72,7 +73,8 @@
         "subtotal": "12430.19",
         "tax": "1025.49",
         "freight": "0.00",
-        "total": "13455.68"
+        "total": "13455.68",
+        "vendor_name_resolved": "Praxis Software Group"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -144,7 +146,8 @@
         "subtotal": "6198.59",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "6198.59"
+        "total": "6198.59",
+        "vendor_name_resolved": "Oakfield Logistics Partners"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -412,7 +415,8 @@
         "subtotal": "19857.82",
         "tax": "1191.47",
         "freight": "129.19",
-        "total": "21178.48"
+        "total": "21178.48",
+        "vendor_name_resolved": "Ironwood Components LLC"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -470,7 +474,8 @@
         "subtotal": "4857.61",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "4857.61"
+        "total": "4857.61",
+        "vendor_name_resolved": "Meridian Professional Services"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -556,7 +561,8 @@
         "subtotal": "2481.75",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "2481.75"
+        "total": "2481.75",
+        "vendor_name_resolved": "Brightline Freight Systems"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -578,6 +584,12 @@
           "severity": "BLOCK",
           "message": "Line items do not sum to the stated subtotal",
           "detail": "lines total 5,613.55, subtotal says 5,621.65 (off by 8.10)"
+        },
+        {
+          "code": "LINE_EXTENSION_MISMATCH",
+          "severity": "BLOCK",
+          "message": "A line's quantity times unit price does not equal its amount",
+          "detail": "line 5: 3 x 673.01 = 2,019.03 but the line reads 2,010.93 (off by 8.10)"
         },
         {
           "code": "STALE_DATE",
@@ -641,7 +653,8 @@
         "subtotal": "5621.65",
         "tax": "393.52",
         "freight": "172.72",
-        "total": "6187.89"
+        "total": "6187.89",
+        "vendor_name_resolved": "Halvorsen Machine Works"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -726,7 +739,8 @@
         "subtotal": "4180.51",
         "tax": "376.25",
         "freight": "60.47",
-        "total": "4617.23"
+        "total": "4617.23",
+        "vendor_name_resolved": "Kessler Industrial Tools"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -798,7 +812,8 @@
         "subtotal": "2790.54",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "2790.54"
+        "total": "2790.54",
+        "vendor_name_resolved": "Summit Ridge Uti1ities"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -826,6 +841,12 @@
           "severity": "BLOCK",
           "message": "Line items do not sum to the stated subtotal",
           "detail": "lines total 3,235.82, subtotal says 2,835.86 (off by 399.96)"
+        },
+        {
+          "code": "LINE_EXTENSION_MISMATCH",
+          "severity": "BLOCK",
+          "message": "A line's quantity times unit price does not equal its amount",
+          "detail": "line 1: 1 x 554.99 = 554.99 but the line reads 954.95 (off by 399.96)"
         },
         {
           "code": "UNKNOWN_VENDOR",
@@ -868,7 +889,8 @@
         "subtotal": "2835.86",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "2835.86"
+        "total": "2835.86",
+        "vendor_name_resolved": "Pinehurst Facility Services"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1107,7 +1129,8 @@
         "subtotal": "7421.49",
         "tax": "742.15",
         "freight": "161.94",
-        "total": "8325.58"
+        "total": "8325.58",
+        "vendor_name_resolved": "Verity Office Solutions"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1207,7 +1230,8 @@
         "subtotal": "4462.35",
         "tax": "312.36",
         "freight": "145.51",
-        "total": "4920.22"
+        "total": "4920.22",
+        "vendor_name_resolved": "Coastal Label & Print"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1265,7 +1289,8 @@
         "subtotal": "2942.88",
         "tax": "272.22",
         "freight": "178.42",
-        "total": "3393.52"
+        "total": "3393.52",
+        "vendor_name_resolved": "Caldwell Paper & Packaging"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1287,6 +1312,12 @@
           "severity": "BLOCK",
           "message": "Line items do not sum to the stated subtotal",
           "detail": "lines total 9,936.18, subtotal says 9,536.58 (off by 399.60)"
+        },
+        {
+          "code": "LINE_EXTENSION_MISMATCH",
+          "severity": "BLOCK",
+          "message": "A line's quantity times unit price does not equal its amount",
+          "detail": "line 3: 15 x 21.78 = 326.70 but the line reads 726.30 (off by 399.60)"
         }
       ],
       "extracted": {
@@ -1337,7 +1368,8 @@
         "subtotal": "9536.58",
         "tax": "786.77",
         "freight": "0.00",
-        "total": "10323.35"
+        "total": "10323.35",
+        "vendor_name_resolved": "Praxis Software Group"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1422,7 +1454,8 @@
         "subtotal": "4924.19",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "4924.19"
+        "total": "4924.19",
+        "vendor_name_resolved": "Oakfield Logistics Partners"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1487,7 +1520,8 @@
         "subtotal": "3786.52",
         "tax": "227.19",
         "freight": "105.11",
-        "total": "4118.82"
+        "total": "4118.82",
+        "vendor_name_resolved": "Ironwood Components LLC"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1559,7 +1593,8 @@
         "subtotal": "9851.68",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "9851.68"
+        "total": "9851.68",
+        "vendor_name_resolved": "Meridian Professional Services"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1894,7 +1929,8 @@
         "subtotal": "17787.51",
         "tax": "0.00",
         "freight": "75.91",
-        "total": "17787.51"
+        "total": "17787.51",
+        "vendor_name_resolved": "Brightline Freight Systems"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -1973,7 +2009,8 @@
         "subtotal": "8558.14",
         "tax": "599.07",
         "freight": "133.58",
-        "total": "9290.79"
+        "total": "9290.79",
+        "vendor_name_resolved": "Halvorsen Machine Works"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2038,7 +2075,8 @@
         "subtotal": "993.50",
         "tax": "89.42",
         "freight": "69.45",
-        "total": "1152.37"
+        "total": "1152.37",
+        "vendor_name_resolved": "Kess1er Industrial Tools"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2066,6 +2104,12 @@
           "severity": "BLOCK",
           "message": "Line items do not sum to the stated subtotal",
           "detail": "lines total 2,106.28, subtotal says 2,106.10 (off by 0.18)"
+        },
+        {
+          "code": "LINE_EXTENSION_MISMATCH",
+          "severity": "BLOCK",
+          "message": "A line's quantity times unit price does not equal its amount",
+          "detail": "line 4: 1 x 212.46 = 212.46 but the line reads 212.64 (off by 0.18)"
         },
         {
           "code": "FUTURE_DATE",
@@ -2122,7 +2166,8 @@
         "subtotal": "2106.10",
         "tax": "0.00",
         "freight": "0.00",
-        "total": "2106.10"
+        "total": "2106.10",
+        "vendor_name_resolved": "Summit Ridge Utilities"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2200,7 +2245,8 @@
         "subtotal": "5804.39",
         "tax": "536.91",
         "freight": "38.18",
-        "total": "6379.48"
+        "total": "6379.48",
+        "vendor_name_resolved": "Tri-State Electric Supply"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2258,7 +2304,8 @@
         "subtotal": "1109.58",
         "tax": "110.96",
         "freight": "129.32",
-        "total": "1349.86"
+        "total": "1349.86",
+        "vendor_name_resolved": "Verity Office Solutions"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2442,7 +2489,8 @@
         "subtotal": "11361.93",
         "tax": "795.34",
         "freight": "0.00",
-        "total": "12157.27"
+        "total": "12157.27",
+        "vendor_name_resolved": "Coastal Label & Print"
       },
       "extraction_score": {
         "fields_checked": 9,
@@ -2539,7 +2587,8 @@
         "subtotal": "4900.63",
         "tax": "453.31",
         "freight": "42.11",
-        "total": "5396.05"
+        "total": "5396.05",
+        "vendor_name_resolved": "Caldwell Paper & Packaging"
       },
       "extraction_score": {
         "fields_checked": 9,

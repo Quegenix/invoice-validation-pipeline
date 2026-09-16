@@ -89,6 +89,9 @@ button:hover { filter:brightness(1.08); }
   border-radius:11px; overflow-x:auto; }
 .posted table { margin:0; min-width:560px; }
 .posted th, .posted td { padding:8px 14px; }
+.posted td.note { color:var(--muted); font-size:12px; }
+.degraded { background:#3a2a12; border:1px solid #6b4a1c; color:#e8c98a;
+  padding:10px 14px; border-radius:6px; margin:18px 0 0; font-size:13px; }
 .acc { color:var(--ok); }
 footer { color:var(--muted); font-size:11.5px; margin-top:30px;
   border-top:1px solid var(--line); padding-top:14px; }
@@ -107,10 +110,9 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
 <div class="stats">
   <div class="stat ok"><div class="n">12</div><div class="l">Posted</div></div>
   <div class="stat hold"><div class="n">12</div><div class="l">Held</div></div>
-  <div class="stat"><div class="n">95.4%</div><div class="l">Field accuracy</div></div>
-  <div class="stat"><div class="n">0</div><div class="l">Defects missed</div></div>
-  <div class="stat"><div class="n">0</div><div class="l">Holds w/o cause</div></div>
+  <div class="stat"><div class="n">95.4%</div><div class="l">Field accuracy</div></div><div class="stat"><div class="n">0</div><div class="l">Defects missed</div></div><div class="stat"><div class="n">0</div><div class="l">Holds w/o cause</div></div>
 </div>
+
 
 <h3 class="sec">Held for review — 12 documents</h3>
 
@@ -189,6 +191,11 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
                     <span class="code">LINE_SUM_MISMATCH</span></div>
                   <div class="fmsg">Line items do not sum to the stated subtotal</div>
                   <div class="fdetail">lines total 5,613.55, subtotal says 5,621.65 (off by 8.10)</div>
+                </div><div class="finding block">
+                  <div class="fhead"><span class="sev">BLOCK</span>
+                    <span class="code">LINE_EXTENSION_MISMATCH</span></div>
+                  <div class="fmsg">A line&#x27;s quantity times unit price does not equal its amount</div>
+                  <div class="fdetail">line 5: 3 x 673.01 = 2,019.03 but the line reads 2,010.93 (off by 8.10)</div>
                 </div><div class="finding block">
                   <div class="fhead"><span class="sev">BLOCK</span>
                     <span class="code">STALE_DATE</span></div>
@@ -315,6 +322,11 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
                     <span class="code">LINE_SUM_MISMATCH</span></div>
                   <div class="fmsg">Line items do not sum to the stated subtotal</div>
                   <div class="fdetail">lines total 3,235.82, subtotal says 2,835.86 (off by 399.96)</div>
+                </div><div class="finding block">
+                  <div class="fhead"><span class="sev">BLOCK</span>
+                    <span class="code">LINE_EXTENSION_MISMATCH</span></div>
+                  <div class="fmsg">A line&#x27;s quantity times unit price does not equal its amount</div>
+                  <div class="fdetail">line 1: 1 x 554.99 = 554.99 but the line reads 954.95 (off by 399.96)</div>
                 </div><div class="finding block">
                   <div class="fhead"><span class="sev">BLOCK</span>
                     <span class="code">UNKNOWN_VENDOR</span></div>
@@ -444,6 +456,11 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
                     <span class="code">LINE_SUM_MISMATCH</span></div>
                   <div class="fmsg">Line items do not sum to the stated subtotal</div>
                   <div class="fdetail">lines total 9,936.18, subtotal says 9,536.58 (off by 399.60)</div>
+                </div><div class="finding block">
+                  <div class="fhead"><span class="sev">BLOCK</span>
+                    <span class="code">LINE_EXTENSION_MISMATCH</span></div>
+                  <div class="fmsg">A line&#x27;s quantity times unit price does not equal its amount</div>
+                  <div class="fdetail">line 3: 15 x 21.78 = 326.70 but the line reads 726.30 (off by 399.60)</div>
                 </div>
       <div class="cause misread"><b>Simulated misread:</b> line 3 amount misread as 726.30 (printed: 326.70)</div>
       <div class="fields">
@@ -768,6 +785,11 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
                   <div class="fdetail">lines total 2,106.28, subtotal says 2,106.10 (off by 0.18)</div>
                 </div><div class="finding block">
                   <div class="fhead"><span class="sev">BLOCK</span>
+                    <span class="code">LINE_EXTENSION_MISMATCH</span></div>
+                  <div class="fmsg">A line&#x27;s quantity times unit price does not equal its amount</div>
+                  <div class="fdetail">line 4: 1 x 212.46 = 212.46 but the line reads 212.64 (off by 0.18)</div>
+                </div><div class="finding block">
+                  <div class="fhead"><span class="sev">BLOCK</span>
                     <span class="code">FUTURE_DATE</span></div>
                   <div class="fmsg">Invoice is dated in the future</div>
                   <div class="fdetail">dated 2026-11-30, 80 days ahead — usually a wrong year on the vendor&#x27;s template</div>
@@ -903,56 +925,67 @@ footer { color:var(--muted); font-size:11.5px; margin-top:30px;
 
 <h3 class="sec">Posted automatically — 12 documents</h3>
 <div class="posted"><table>
-<thead><tr><th>File</th><th>Layout</th><th>Vendor</th>
-<th class="num">Total</th><th class="num">Field acc.</th></tr></thead>
+<thead><tr><th>File</th><th>Layout</th><th>Vendor</th><th class="num">Total</th><th class="num">Field acc.</th></tr></thead>
 <tbody><tr><td>INV-001.pdf</td>
                 <td>modern</td>
                 <td>Praxis Software Group</td>
                 <td class="num">13,455.68</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-003.pdf</td>
                 <td>dense</td>
                 <td>Ironwood Components LLC</td>
                 <td class="num">21,178.48</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-004.pdf</td>
                 <td>minimal</td>
                 <td>Meridian Professional Services</td>
                 <td class="num">4,857.61</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-005.pdf</td>
                 <td>modern</td>
                 <td>Brightline Freight Systems</td>
                 <td class="num">2,481.75</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-007.pdf</td>
                 <td>classic</td>
                 <td>Kessler Industrial Tools</td>
                 <td class="num">4,617.23</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-010.pdf</td>
                 <td>dense</td>
                 <td>Verity Office Solutions</td>
                 <td class="num">8,325.58</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-012.pdf</td>
                 <td>classic</td>
                 <td>Caldwell Paper &amp; Packaging</td>
                 <td class="num">3,393.52</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-015.pdf</td>
                 <td>minimal</td>
                 <td>Ironwood Components LLC</td>
                 <td class="num">4,118.82</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-018.pdf</td>
                 <td>modern</td>
                 <td>Halvorsen Machine Works</td>
                 <td class="num">9,290.79</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-021.pdf</td>
                 <td>minimal</td>
                 <td>Tri-State Electric Supply</td>
                 <td class="num">6,379.48</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-022.pdf</td>
                 <td>modern</td>
                 <td>Verity Office Solutions</td>
                 <td class="num">1,349.86</td>
+                
                 <td class="num acc">100%</td></tr><tr><td>INV-024.pdf</td>
                 <td>classic</td>
                 <td>Caldwell Paper &amp; Packaging</td>
                 <td class="num">5,396.05</td>
+                
                 <td class="num acc">100%</td></tr></tbody></table></div>
 
 <footer>
