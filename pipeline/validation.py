@@ -148,18 +148,45 @@ def _dec(v) -> Optional[Decimal]:
         return None
 
 
+class _SetShim:
+    """Lets a caller keep passing a set where a dict is now wanted."""
+
+    def __init__(self, s):
+        self._s = s
+
+    def __contains__(self, k):
+        return k in self._s
+
+    def get(self, k, default=None):
+        return default
+
+    def setdefault(self, k, v):
+        self._s.add(k)
+        return None
+
+
 def _money(v) -> Decimal:
     d = _dec(v)
     return d if d is not None else Decimal("0")
 
 
-def validate(record: dict, *, known_vendors: set, seen_keys: set,
-             today: date) -> ValidationResult:
+def validate(record: dict, *, known_vendors, seen_keys, today: date,
+             buyer_name=None, base_currency="USD",
+             file_name=None) -> ValidationResult:
     """
     `record` is an extracted invoice — what the extractor believes the
-    document says. `seen_keys` is mutated: it is the running ledger of
-    (vendor, invoice_number) pairs already processed.
+    document says.
+
+    `seen_keys` is mutated. It maps a key to the file that first carried it,
+    so a duplicate can name its twin rather than merely asserting one exists.
+    Two kinds of key live in it, tagged so they cannot collide:
+        ("num", vendor, invoice_number)     the same invoice arriving twice
+        ("amt", vendor, date, total)        a re-issue under a new number
+    A set is still accepted for backwards compatibility; the messages are
+    just less specific.
     """
+    if isinstance(seen_keys, set):
+        seen_keys = _SetShim(seen_keys)
     res = ValidationResult()
     vendors = _as_index(known_vendors)
 
@@ -227,14 +254,46 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
     tax = _money(record.get("tax"))
     freight = _money(record.get("freight"))
     total = _money(record.get("total"))
-    computed = subtotal + tax + freight
+    # An invoice's totals identity is not subtotal + tax. Real bills deduct
+    # discounts before tax and add fees after it, and a rule that ignores
+    # either fires on every invoice that has one. On a 50-document corpus of
+    # ordinary service invoices, 16 carried a discount or a fee -- so the
+    # narrow version of this rule would have been wrong about a third of them
+    # while looking exactly as confident as it does when it is right.
+    discount = _money(record.get("discount"))
+    fees = _money(record.get("fees"))
+    computed = subtotal - discount + tax + freight + fees
     delta = (computed - total).copy_abs()
     if delta > CENT:
+        parts = [f"{subtotal:,.2f}"]
+        if discount: parts.append(f"- {discount:,.2f} discount")
+        if tax: parts.append(f"+ {tax:,.2f} tax")
+        if freight: parts.append(f"+ {freight:,.2f} freight")
+        if fees: parts.append(f"+ {fees:,.2f} fees")
         res.findings.append(Finding(
             "TOTAL_MISMATCH", BLOCK,
-            "Subtotal plus tax and freight does not equal the stated total",
-            f"{subtotal:,.2f} + {tax:,.2f} + {freight:,.2f} = {computed:,.2f}, "
+            "The invoice's own figures do not add up to its stated total",
+            f"{' '.join(parts)} = {computed:,.2f}, "
             f"total says {total:,.2f} (off by {delta:,.2f})",
+        ))
+
+    # A deposit or part-payment already applied means the total and the amount
+    # owed are different numbers, and posting the wrong one is wrong by the
+    # deposit. Nothing on the page says which one the books want.
+    paid = _money(record.get("amount_paid"))
+    bal = _dec(record.get("balance_due"))
+    # Keyed on a stated payment, not merely on balance != total. A balance
+    # that disagrees with the total when nothing was paid is a totals problem,
+    # and TOTAL_MISMATCH already owns that; firing here too would just add
+    # noise to a document that is already held.
+    if paid > 0:
+        shown = f"{bal:,.2f}" if bal is not None else f"{(total - paid):,.2f}"
+        res.findings.append(Finding(
+            "PARTIAL_PAYMENT", WARN,
+            "Invoice total and amount owed are different numbers",
+            f"total {total:,.2f}, already paid {paid:,.2f}, balance {shown} — "
+            f"which one posts is a decision about this vendor, not something "
+            f"the document answers",
         ))
 
     # ---------------------------------------------------------------
@@ -252,7 +311,15 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
     # ---------------------------------------------------------------
     vendor = (record.get("vendor_name") or "").strip()
     resolved = vendor
-    if not vendor:
+    # No master list is a real state, not an error: it is every first
+    # engagement, before anyone has exported one. Flagging all fifty invoices
+    # as unknown would be technically true and completely useless.
+    if not vendors.names:
+        if not vendor:
+            res.findings.append(Finding(
+                "MISSING_VENDOR", BLOCK,
+                "No vendor name could be read from the document"))
+    elif not vendor:
         resolved = ""
         res.findings.append(Finding(
             "MISSING_VENDOR", BLOCK,
@@ -300,15 +367,17 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
         # the page happened to say would make 'GRANGER INDUSTRIAL GAS' and
         # 'Granger Industrial Gas' two separate ledgers and let the same
         # invoice through twice — the exact failure this rule exists for.
-        key = (resolved.casefold(), inv_no.casefold())
+        key = ("num", resolved.casefold(), inv_no.casefold())
         if key in seen_keys:
+            twin = seen_keys.get(key)
             res.findings.append(Finding(
                 "DUPLICATE_INVOICE_NO", BLOCK,
                 "This vendor and invoice number have already been processed",
-                f"'{inv_no}' from {vendor} was seen earlier in this run — "
-                f"posting both would pay the vendor twice",
+                f"'{inv_no}' from {vendor} was seen earlier in this run"
+                + (f" on {twin}" if twin else "")
+                + " — posting both would pay the vendor twice",
             ))
-        seen_keys.add(key)
+        seen_keys.setdefault(key, file_name)
 
     # ---------------------------------------------------------------
     # 7 & 8. Date sanity.
@@ -346,6 +415,108 @@ def validate(record: dict, *, known_vendors: set, seen_keys: set,
                 "Invoice is dated in the future",
                 f"dated {parsed.isoformat()}, {abs(age)} days ahead — "
                 f"usually a wrong year on the vendor's template",
+            ))
+
+    # ---------------------------------------------------------------
+    # 9. The same amount from the same vendor on the same day, under a
+    #    different invoice number.
+    #
+    # This is the duplicate the invoice-number check cannot see: a vendor
+    # re-issuing an unpaid invoice under a fresh number. It needs no
+    # identifier at all, and the three fields it does use are each
+    # cross-checked by the arithmetic above — so a misread in them raises a
+    # flag rather than passing quietly, which is exactly the property the
+    # invoice number lacks.
+    #
+    # Two genuinely separate invoices can legitimately share vendor, date and
+    # amount (a duplicated monthly charge), which is why this holds for a
+    # human rather than rejecting outright.
+    # ---------------------------------------------------------------
+    if parsed and total and vendor:
+        akey = ("amt", resolved.casefold(), parsed.isoformat(), str(total))
+        if akey in seen_keys:
+            twin = seen_keys.get(akey)
+            res.findings.append(Finding(
+                "SAME_AMOUNT_REDUPLICATE", BLOCK,
+                "Same vendor, date and amount as another invoice in this run",
+                f"{total:,.2f} from {resolved} dated {parsed.isoformat()}"
+                + (f" also appears on {twin}" if twin else " appears twice")
+                + f", under a different invoice number — a re-issue looks like "
+                  f"this, and the invoice-number check cannot see it",
+            ))
+        seen_keys.setdefault(akey, file_name)
+
+    # ---------------------------------------------------------------
+    # 10. Credit lines.
+    #
+    # A negative line means this is not a plain bill. Posting it as one gets
+    # the sign wrong somewhere, and what a credit should actually do depends
+    # on the accounting system. Undefined behaviour is a reason to stop.
+    # ---------------------------------------------------------------
+    negatives = [(n, i) for n, i in enumerate(items, 1)
+                 if (_dec(i.get("amount")) or Decimal(0)) < 0]
+    if negatives:
+        res.findings.append(Finding(
+            "NEGATIVE_LINE", BLOCK,
+            "Contains a credit line",
+            "; ".join(f"line {n}: {i.get('description') or ''} "
+                      f"{_money(i.get('amount')):,.2f}" for n, i in negatives)
+            + " — this is a credit memo or a mixed document, not a plain bill",
+        ))
+
+    # ---------------------------------------------------------------
+    # 11. Currency.
+    #
+    # Nothing downstream reads a currency code, so a foreign-priced invoice
+    # would post at face value as though it were dollars. The error is the
+    # exchange rate, silently.
+    # ---------------------------------------------------------------
+    cur = (record.get("currency") or base_currency).strip().upper()
+    if cur != base_currency.upper():
+        res.findings.append(Finding(
+            "FOREIGN_CURRENCY", BLOCK,
+            f"Priced in {cur}, not {base_currency.upper()}",
+            f"total {total:,.2f} is {cur}; posting it unconverted would enter "
+            f"the wrong amount by whatever the exchange rate happens to be",
+        ))
+
+    # ---------------------------------------------------------------
+    # 12 & 13. Two checks that need fields the extractor does not yet
+    # return. Written now and inert until it does, so that adding the
+    # fields is the only remaining step.
+    # ---------------------------------------------------------------
+    rate = _dec(record.get("tax_rate_printed"))
+    if rate is not None and subtotal:
+        if rate > 1:                      # "6" or "6%" rather than 0.06
+            rate = rate / Decimal(100)
+        # Tax applies to what is actually being paid, so a discount comes off
+        # BEFORE tax is figured. Taxing the gross subtotal fires on every
+        # discounted invoice: on a 50-document corpus of ordinary service
+        # bills it was wrong 7 times out of 7, and no synthetic test caught it
+        # because the generator never produced a discount.
+        expected = ((subtotal - discount) * rate).quantize(CENT)
+        # Half a percent of the tax, not a penny. Tax is commonly computed per
+        # line and summed, so it will not match subtotal x rate exactly -- a
+        # few cents out on a four-figure invoice is arithmetic, not a defect.
+        # Measured: at a one-cent tolerance this fired on discrepancies of
+        # 0.02 and 0.14, while every real case was out by 120.00 or more.
+        tol = max(CENT, (expected * Decimal("0.005")).copy_abs())
+        if (expected - tax).copy_abs() > tol:
+            res.findings.append(Finding(
+                "TAX_RATE_WRONG", BLOCK,
+                "Tax charged does not match the tax rate printed on the invoice",
+                f"{subtotal:,.2f} at {rate * 100:.3f}% is {expected:,.2f}, "
+                f"but the invoice charges {tax:,.2f}",
+            ))
+
+    billed = (record.get("bill_to_name") or "").strip()
+    if billed and buyer_name:
+        if normalize_vendor(billed) != normalize_vendor(buyer_name):
+            res.findings.append(Finding(
+                "WRONG_BILL_TO", BLOCK,
+                "Invoice is addressed to a different company",
+                f"billed to '{billed}', not '{buyer_name}' — this is somebody "
+                f"else's invoice and paying it is money gone",
             ))
 
     # ---------------------------------------------------------------

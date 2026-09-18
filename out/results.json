@@ -1396,7 +1396,7 @@
           "code": "DUPLICATE_INVOICE_NO",
           "severity": "BLOCK",
           "message": "This vendor and invoice number have already been processed",
-          "detail": "'OL-04829' from Oakfield Logistics Partners was seen earlier in this run \u2014 posting both would pay the vendor twice"
+          "detail": "'OL-04829' from Oakfield Logistics Partners was seen earlier in this run on INV-002.pdf \u2014 posting both would pay the vendor twice"
         }
       ],
       "extracted": {

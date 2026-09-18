@@ -80,9 +80,24 @@ def money(x) -> Decimal:
     return Decimal(str(x)).quantize(TWO, rounding=ROUND_HALF_UP)
 
 
+# The currency a document is being rendered in. Set around each render, the
+# same way dataset.BUYER is swapped for a wrong-bill-to document.
+#
+# This exists because a FOREIGN_CURRENCY defect used to set a field on the
+# record that NO layout ever drew. The page showed plain dollar amounts, the
+# extractor correctly read USD, and the answer key insisted the invoice was in
+# CAD. A defect that is not on the page is not a defect -- it is a bug in the
+# generator that scores the pipeline for a miss it never had a chance at.
+CURRENCY = "USD"
+
+
 def fmt(d: Decimal, symbol=False) -> str:
     s = f"{d:,.2f}"
-    return f"${s}" if symbol else s
+    if not symbol:
+        return s
+    # A dollar sign on a pound amount is wrong, and a reviewer reading
+    # "GBP $3,352.40" would rightly distrust the whole document.
+    return f"${s}" if CURRENCY == "USD" else f"{CURRENCY} {s}"
 
 
 # ---------------------------------------------------------------------------

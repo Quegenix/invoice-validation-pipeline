@@ -39,6 +39,13 @@ SCHEMA = {
     "terms": "str | null",
     "po_number": "str | null",
     "currency": "str — ISO code, default USD",
+    "bill_to_name": "str | null — the company this invoice is addressed to, "
+                    "exactly as printed in the bill-to block. Null if the "
+                    "document does not show one.",
+    "tax_rate_printed": "string decimal | null — the tax RATE if the invoice "
+                        "prints one (a line like 'Tax 6.00%' or 'GST @ 5%'). "
+                        "Return it as printed, e.g. '6.00' or '0.06'. Null if "
+                        "only a tax amount is shown and no rate.",
     "line_items": [
         {
             "description": "str",
@@ -49,6 +56,14 @@ SCHEMA = {
         }
     ],
     "subtotal": "string decimal — as printed, do not recompute",
+    "discount": "string decimal — any discount or credit deducted before tax, "
+                "as a POSITIVE number. 0 if absent.",
+    "fees": "string decimal — surcharges, trip fees, environmental or card "
+            "fees added to the bill. 0 if absent.",
+    "amount_paid": "string decimal — deposits or payments already applied to "
+                   "this invoice. 0 if absent.",
+    "balance_due": "string decimal | null — the amount actually owed now, if "
+                   "the invoice states one separately from the total.",
     "tax": "string decimal — as printed, 0 if absent",
     "freight": "string decimal — as printed, 0 if absent",
     "total": "string decimal — as printed, do not recompute",

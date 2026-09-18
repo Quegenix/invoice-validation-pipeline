@@ -38,6 +38,7 @@ import argparse
 import csv
 import json
 import sys
+import time
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -111,6 +112,56 @@ def score_extraction(extracted, truth):
     }
 
 
+class Progress:
+    """
+    invoice n of N, with elapsed and a remaining estimate from the average
+    so far. The estimate is deliberately crude: pages vary enormously in line
+    count and a dense 34-line invoice costs several times a 3-line one, so a
+    smoothed guess would look more authoritative than it deserves to.
+    """
+
+    def __init__(self, total):
+        self.total = total
+        self.tty = sys.stdout.isatty()
+        self.t0 = time.monotonic()
+        self.width = 0
+        self.n = 0
+
+    @staticmethod
+    def _clock(secs):
+        secs = int(max(0, secs))
+        return f"{secs // 60}:{secs % 60:02d}"
+
+    def start(self, n, name):
+        self.n = n
+        if not self.tty:
+            return
+        elapsed = time.monotonic() - self.t0
+        eta = ""
+        if n > 1:
+            per = elapsed / (n - 1)
+            eta = f", ~{self._clock(per * (self.total - n + 1))} left"
+        line = (f"  reading {n:>3}/{self.total}  {name:<16} "
+                f"{self._clock(elapsed)} elapsed{eta}")
+        self.width = max(self.width, len(line))
+        sys.stdout.write("\r" + line.ljust(self.width))
+        sys.stdout.flush()
+
+    def done(self, disposition):
+        if self.tty:
+            return
+        # Not a terminal: one durable line each, so a crash leaves a trail.
+        print(f"  {self.n:>3}/{self.total}  {disposition}", flush=True)
+
+    def finish(self):
+        if self.tty:
+            sys.stdout.write("\r" + " " * self.width + "\r")
+            sys.stdout.flush()
+        total = time.monotonic() - self.t0
+        print(f"  extracted            {self.total} documents in "
+              f"{self._clock(total)}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--extractor", choices=["mock", "claude"], default="mock")
@@ -123,6 +174,19 @@ def main():
     ap.add_argument("--vendors", metavar="CSV",
                     help="approved vendor list; first column is the vendor "
                          "name. Replaces the manifest's known_vendors.")
+    ap.add_argument("--ledger", metavar="DB",
+                    help="SQLite ledger: remembers earlier batches, so a "
+                         "duplicate re-sent next month is still caught, and "
+                         "learns each vendor's habits")
+    ap.add_argument("--base-currency", default="USD",
+                    help="anything priced in another currency is held")
+    ap.add_argument("--out", metavar="DIR",
+                    help="write results.json and review.html here instead of "
+                         "out/. Extraction is the expensive half of this "
+                         "pipeline and validation is free, so a run worth "
+                         "paying for is worth keeping: point each client "
+                         "folder at its own directory and the rules can be "
+                         "re-scored against it later for nothing.")
     ap.add_argument("--client-name", metavar="NAME",
                     help="name shown on the review page header")
     args = ap.parse_args()
@@ -175,13 +239,61 @@ def main():
         sys.exit(f"No PDFs in {pdf_dir}."
                  + (" Run generate_invoices.py first." if demo else ""))
 
-    seen_keys = set()
+    # Maps a key to the file that first carried it, so a duplicate can name
+    # its twin instead of only asserting one exists.
+    # A batch needs an identity before anything can be recorded against it.
+    batch_id = (f"B-{date.today().isoformat()}-"
+                f"{(pdf_dir.parent.name or pdf_dir.name)[:16]}")
+
+    seen_keys = {}
     results = []
 
-    for pdf in pdfs:
+    # Memory and learned habits, if a ledger was given. These used to run in
+    # the staging build, which meant a normal run never performed them at all
+    # -- the checks existed and nothing exercised them. They belong here, with
+    # the rest of the checking; staging renders what this produces.
+    led = vprof = None
+    profiles_by_vendor = {}
+    if args.ledger:
+        from ledger import Ledger, file_hash
+        import profiles as vprof
+        led = Ledger(args.ledger)
+        led.open_batch(batch_id, buyer, str(pdf_dir), len(pdfs))
+        profiles_by_vendor = vprof.build(led, buyer)
+
+    # Progress, because real extraction is slow enough that silence is
+    # indistinguishable from a hang, and the person watching is paying per
+    # document. On a terminal this rewrites one line; redirected to a file it
+    # prints a line each so the log still says where a run died.
+    progress = Progress(len(pdfs))
+
+    for n, pdf in enumerate(pdfs, start=1):
+        progress.start(n, pdf.name)
         record = extractor.extract(pdf)
         vr = validate(record, known_vendors=known_vendors,
-                      seen_keys=seen_keys, today=today)
+                      seen_keys=seen_keys, today=today,
+                      # Only an explicitly stated client name asserts who
+                      # "we" are. `buyer` falls back to the folder name for
+                      # display, and comparing every bill-to against a folder
+                      # name would flag the entire batch.
+                      buyer_name=args.client_name if not demo else None,
+                      base_currency=args.base_currency,
+                      file_name=pdf.name)
+
+        prior = learned = []
+        if led:
+            prior = led.check(buyer, record, exclude_batch=batch_id,
+                              content_hash=file_hash(pdf))
+            learned = vprof.check(record, profiles_by_vendor.get(
+                record.get("vendor_name_resolved") or record.get("vendor_name")))
+            # Record it as seen before deciding anything, so the batch is in
+            # the ledger even if the run dies later.
+            doc_id = led.stage(batch_id, buyer, pdf.name, record,
+                               content_hash=file_hash(pdf))
+            blocked = (vr.blocked
+                       or any(m["severity"] == "BLOCK" for m in prior)
+                       or any(m["severity"] == "BLOCK" for m in learned))
+            led.record(doc_id, "held" if blocked else "staged", actor="pipeline")
 
         # Manifest-derived fields are omitted in client mode rather than
         # defaulted — a 0 that looks like a measurement is the failure mode
@@ -198,6 +310,11 @@ def main():
             for f in vr.findings
         ]
         row["extracted"] = record
+        if led:
+            row["prior"] = prior
+            row["learned"] = learned
+            if prior or learned:
+                row["disposition"] = "REVIEW"
         if demo:
             row["extraction_score"] = score_extraction(record, t)
             row["injected_misread"] = getattr(extractor, "injected", {}).get(pdf.name)
@@ -205,6 +322,9 @@ def main():
             row["expected_disposition"] = t["expected_disposition"]
 
         results.append(row)
+        progress.done(vr.disposition)
+
+    progress.finish()
 
     # ---- routing ------------------------------------------------------------
     posted = [r for r in results if r["disposition"] == "POST"]
@@ -246,7 +366,10 @@ def main():
             "fields_checked": total_fields,
         })
 
-    (OUT / "results.json").write_text(
+    out_dir = Path(args.out).expanduser() if args.out else OUT
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    (out_dir / "results.json").write_text(
         json.dumps({"summary": summary, "documents": results}, indent=2),
         newline="\n", encoding="utf-8")
 
@@ -276,7 +399,10 @@ def main():
     if held:
         print("  HELD")
         for r in held:
-            why = r["findings"][0]["code"] if r["findings"] else "?"
+            # Every code, not just the first. Showing one made a document
+            # held for two reasons look like it was held for one, and reading
+            # that summary produced a wrong conclusion twice in a row.
+            why = ",".join(f["code"] for f in r["findings"]) or "?"
             if demo:
                 src = ("seeded: " + r["seeded_defect"]) if r["seeded_defect"] else \
                       ("misread: " + r["injected_misread"][:44]) if r["injected_misread"] else \
@@ -294,10 +420,10 @@ def main():
         print()
 
     import review
-    review.build(OUT / "results.json", OUT / "review.html",
+    review.build(out_dir / "results.json", out_dir / "review.html",
                  buyer=buyer, pdf_dir=pdf_dir, demo=demo)
-    print(f"  review queue         {OUT / 'review.html'}")
-    print(f"  full results         {OUT / 'results.json'}")
+    print(f"  review queue         {out_dir / 'review.html'}")
+    print(f"  full results         {out_dir / 'results.json'}")
     print()
 
     return 1 if (missed or false_holds) else 0
